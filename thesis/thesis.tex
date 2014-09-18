@@ -1,0 +1,140 @@
+\documentclass[a4paper, 12pt]{book}
+
+
+\usepackage[utf8]{inputenc}
+\usepackage[numberedbib, nosectionbib]{apacite}
+\usepackage{ny}
+\usepackage{graphicx} 
+\usepackage{natbib}
+\usepackage{algorithm} 
+\usepackage{algorithmic} 
+\usepackage{fancyhdr}
+\usepackage{index}
+\usepackage{amsfonts}
+\usepackage{ifthen}
+\usepackage{tipa} % IPA fonts
+\usepackage[hang,bf]{caption}
+%\usepackage{multirow}
+
+\usepackage{color,hyperref}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.3}
+\hypersetup{colorlinks,breaklinks,
+            linkcolor=darkblue,urlcolor=darkblue,
+            anchorcolor=darkblue,citecolor=darkblue}
+
+\newcommand{\field}[1]{\mathbb{#1}}
+\newcommand{\comment}[1]{\marginpar{{\bf \scriptsize{#1}}}}
+
+% for those wacky simpson quotes:
+\newcommand{\intro}[2]{\begin{flushleft}\emph{#1}\newline\footnotesize{#2}\end{flushleft}\bigskip\bigskip}
+
+\newenvironment{narrow}[2]{%
+\begin{list}{}{%
+\setlength{\topsep}{0pt}%
+\setlength{\leftmargin}{#1}%
+\setlength{\rightmargin}{#2}%
+\setlength{\listparindent}{\parindent}%
+\setlength{\itemindent}{\parindent}%
+\setlength{\parsep}{\parskip}}%
+\item[]}{\end{list}}
+
+\setcounter{tocdepth}{2} 
+
+\addtolength{\textwidth}{30pt}
+\addtolength{\evensidemargin}{-15pt}
+
+% Fancy Header Style Options 
+\pagestyle{fancy}                       % Sets fancy header and footer 
+\fancyfoot{}                            % Delete current footer settings 
+\renewcommand{\chaptermark}[1]{         % Lower Case Chapter marker style 
+  \markboth{\chaptername\ \thechapter.\ #1}{}} % 
+\renewcommand{\sectionmark}[1]{         % Lower case Section marker style 
+  \markright{\thesection.\ #1}}         % 
+\fancyhead[LE,RO]{\bfseries\thepage}    % Page number (boldface) in left on even 
+                                        % pages and right on odd pages 
+\fancyhead[RE]{\bfseries\leftmark}      % Chapter in the right on even pages 
+\fancyhead[LO]{\bfseries\rightmark}     % Section in the left on odd pages 
+\renewcommand{\headrulewidth}{0.3pt}    % Width of head rule 
+
+\setlength{\headheight}{15.5pt}
+\setlength{\headsep}{25pt}
+
+% Clear Header Style on the Last Empty Odd pages 
+\makeatletter 
+\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else% 
+    \hbox{}% 
+    \thispagestyle{empty}%              % Empty header styles 
+    \newpage% 
+    \if@twocolumn\hbox{}\newpage\fi\fi\fi} 
+\makeatother
+
+% Begin document
+
+
+\title{Thesis title}
+\author{Osman Başkaya}
+\date{September 2014}
+
+\begin{document}
+
+\maketitle
+
+%\declaration
+
+%\dedication{To my ...}
+
+%\begin{abstract}
+%My abstract.
+%\end{abstract}
+
+\tableofcontents
+
+\chapter{Introduction}
+
+\chapter{Related Works}
+
+\chapter{System}
+\input{system.tex}
+
+\chapter{Evaluation Framework for WSI Systems}
+\input{evaluation-framework.tex}
+
+\chapter{Experiments on various tasks}
+
+\section{WSI tasks}
+\subsection{SemEval 2010 WSI Task}\label{subsection:semeval10}
+\input{semeval2010.tex}
+\subsection{SemEval 2013 WSI Task}
+\input{semeval2013.tex}
+\subsection{Pseudoword Dataset}
+
+\section{All-Word task}
+\input{ontonotes.tex}
+
+\section{Semantic Similarity task}
+
+\chapter{Sensitivity Analysis}
+
+\chapter{Conclusion}
+
+%\frontmatter
+
+% \input{}
+
+%\mainmatter
+%\tableofcontents
+%\listoffigures
+%\listoftables
+%\backmatter
+% \input{}
+% \part{}\label{}
+% \input{}
+%\cite{jurgens12evaluation}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+
+
+
+\end{document}
