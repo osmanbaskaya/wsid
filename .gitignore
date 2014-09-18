@@ -9,7 +9,7 @@ run/*.gz
 # Distribution / packaging
 .Python
 env/
-bin/
+-bin/Makefile
 build/
 develop-eggs/
 dist/

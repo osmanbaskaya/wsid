@@ -1,4 +1,4 @@
-all: scripts fastsubs dists runsc.m wkmeans
+all: scripts fastsubs dists wkmeans scode
 
 scripts: check
 	test -e $@ || ln -s ../src/scripts/* .

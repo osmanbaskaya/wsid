@@ -26,14 +26,14 @@ def majority_voting(neighbors):
     return max(senses, key=lambda x: senses[x])
 
 def min_avg_dist(neighbors):
-    senses = dict()
+    senses = dd(list)
     for neighbor, dist in neighbors:
         key = keys[neighbor]
-        senses[key] += float(dist)
-    return min(senses, key=lambda x: senses[x])
+        senses[key].append(float(dist))
+    return min(senses, key=lambda x: sum(senses[x]) / len(senses[x]))
 
 
-def predict(inst, neighbors, evaluation='majority_voting'):
+def predict(inst, neighbors, evaluation):
     if evaluation == 'majority_voting':
         return majority_voting(neighbors)
     elif evaluation == 'min_avg_dist':
@@ -41,9 +41,10 @@ def predict(inst, neighbors, evaluation='majority_voting'):
     else:
         raise AttributeError, "No evaluation setup named %s defined" % evaluation
 
-input_f = fopen(sys.argv[1])
-k = int(sys.argv[2])
-gold_f = fopen(sys.argv[3])
+k = int(sys.argv[1])
+eval_metric = sys.argv[2]
+input_f = fopen(sys.argv[3])
+gold_f = fopen(sys.argv[4])
 
 keys = dict() # building the instance_id -> sense dictionary
 for line in gold_f:
@@ -58,7 +59,7 @@ for line in input_f:
     line = line.split()
     inst = line[0]
     neighbors = zip(line[1:k*2+1:2], line[2:k*2+1:2])
-    pred_sense = predict(inst, neighbors)
+    pred_sense = predict(inst, neighbors, eval_metric)
     actual_sense = keys[inst]
     preds.append(pred_sense == actual_sense)
 
