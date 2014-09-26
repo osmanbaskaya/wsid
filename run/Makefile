@@ -5,7 +5,7 @@ SHELL := /bin/bash
 ### PATH
 SRILM_PATH=/ai/opt/srilm/bin/i686-m64
 
-export PATH:=.:../bin:${SRILM_PATH}:${PATH}
+export PATH:=.:${SRILM_PATH}:${PATH}:../bin:
 
 SEED=1
 CPU=25
@@ -26,6 +26,9 @@ sampled.%.sub.gz:
 	wget http://www.cs.york.ac.uk/semeval2010_WSI/files/$*_data.tar.gz
 	mv $*_data.tar.gz $@
 	tar xzf $@
+
+../bin/ss.jar: /ai/home/obaskaya/semeval13-task13/test_data/scoring/single-sense-precision.jar
+	cp $< $@
 
 s13-test-all.context.gz: 
 	ln -s /ai/home/obaskaya/semeval13-task13/run/test.context.gz $@
@@ -93,6 +96,22 @@ SC_OPTIONS=-s ${SEED} -v -d 100
 
 %.verb.scode.gz: sampled.verb.pairs.gz %.verb.pairs.gz
 	zcat $^ | scode ${SC_OPTIONS} | gzip > $@
+
+
+### Baselines ###
+
+## Supervised Random Baseline ##
+
+supervised-random-baseline-%: %.key
+	python scorer.py <(python supervised-random-baseline.py $<) $<
+
+induced-random-baseline-%: %.key ../bin/ss.jar # make induced-random-baseline-s13-test NUM_SENSE=3
+	python random-baseline.py $< ${NUM_SENSE} > /tmp/$@.${NUM_SENSE}
+	java -jar ../bin/ss.jar -s $< /tmp/$@.${NUM_SENSE} 
+
+induced-gold-n-random-baseline-%: %.key ../bin/ss.jar
+	python random-baseline-gold-n.py $< > /tmp/$@
+	java -jar ../bin/ss.jar -s $< /tmp/$@
 
 ### Substitute KNN ###
 

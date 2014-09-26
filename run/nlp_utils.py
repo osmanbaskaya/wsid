@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 import math
-from collections import defaultdict as dd
+from collections import Counter, defaultdict as dd
 from itertools import izip
 import gzip
 import fnmatch
@@ -24,6 +24,35 @@ def find_files(topdir, pattern):
         for name in filelist:
             if fnmatch.fnmatch(name, pattern):
                 yield os.path.join(path,name)
+
+def calc_perp_for_dataset(fn):
+    f = fopen(fn)
+    d = dd(list)
+    for line in f:
+        tw, inst_id, sense = line.split()
+        d[tw].append(sense)
+
+    perps = []
+    for tw in d:
+        entropy = .0
+        counts = Counter(d[tw])
+        total = float(sum(counts.values()))
+        for sense, c in counts.iteritems():
+            p = c / total
+            entropy += -p * math.log(p, 2)
+        perp = 2 ** entropy
+        print "%s: perp = %f" % (tw, 2 ** perp)
+        perps.append((perp, total))
+
+    total_perp = 0
+    num_inst = 0
+    for perp, count in perps:
+        total_perp += perp * count
+        num_inst += count
+
+    print total_perp, num_inst
+    print "Avg. Entropy for %s: %f" % (fn, total_perp / num_inst)
+
 
 def calc_perp(X, weight=None):
     
