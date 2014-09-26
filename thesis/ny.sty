@@ -1,0 +1,16 @@
+\def\ps@prefaceheadings{\let\@mkboth\markboth
+\def\@oddfoot{\hfill\thepage\hfill}
+\def\@evenfoot{\hfill\thepage\hfill}
+\def\@oddhead{}
+\def\@evenhead{}
+\def\chaptermark##1{}
+\def\sectionmark##1{}
+\def\subsectionmark##1{}
+}
+
+\def\nychapter{
+	\clearpage
+        \thispagestyle{prefaceheadings}
+	\global\@topnum\z@
+	\@afterindentfalse
+	\secdef\@chapter\@schapter}
