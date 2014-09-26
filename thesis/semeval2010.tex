@@ -1,1 +1,31 @@
 
+\emph{TODO: LM details should be explained somewhere above.}
+
+
+\subsubsection{Dataset} 
+The test dataset is part of OntoNotes \cite{hovy06ontonotes}. The texts come from various news sources including CNN, ABC and others. The test set for this task consists of 100 words, 50 nouns and 50 verbs; 5285 noun instances and 3630 verb instances, 8915 instances in total. Average number of sense for nouns is 4.46 and for verbs is 3.12. The following is an example for the test data instance.
+
+\begin{quote}
+  $<swim.v.1>$ \\
+ First of all , visibility will be very very low . $<TargetSentence>$ It 
+ 's going to be bitterly cold , and there is going to be enormous 
+ danger from jagged pieces of metal which could be swimming around in
+ the submarine . $</TargetSentence>$ Given the fact that there are so many
+ dangers and that these divers are risking their own lives , I wonder
+ if there is consideration given to the fact that this may not be 
+ really worth it . \\
+ $</swim.v.1>$
+\end{quote}
+
+
+
+%I removed 87 instances because of two reasons. Some target word was observed 
+
+\subsubsection{Baselines}
+
+\paragraph{Most Frequent Baseline:} Task organizers provided the FScore of most frequent baselines (MFS), which are 0.532, 0.666 and 0.587 for nouns, verbs, and all words, respectively.
+\paragraph{Random Baselines:}I calculated two types of random baselines: Random induced sense baseline and usual random baseline that uses the gold standard sense inventory. The first one is a dummy system that provides random induced senses for each instance. Since this random baseline provides arbitrary senses (i.e., the sense inventory is not the same with the gold standard sense inventory), the mapping between these induced senses and gold standard senses needs to be done. The number in the name of the baseline indicates how many different induced senses are provided for each target word. The other type of random baseline uses the correct number of sense for each target word and randomly picks a sense among those senses provided in gold standard. \href{http://goo.gl/f2X0da}{Results for random baselines can be seen here}.
+\paragraph{kNN-baselines for substitute vectors:} These baselines are computed as follows. First, the most frequent 100 substitutes and their probabilities are found for each test instance using \emph{FASTSUBS} algorithm \cite{fastsubs} and a language model that built by using ukWaC \cite{ukWaC} as corpus and SRILM \cite{stolcke02srilm} as a language model library. These 100 substitutes is not a probability distribution and needs to be normalized. After normalization, I obtained legitimate probability distributions and each instance is represented by its substitute distribution. Using various distance metrics (euclid, cosine, manhattan, maximum, jensen), I found the closest neighboring test instances and their distances for each instance. The two types of kNN baseline are calculated: \emph{majority voting} and \emph{minumum average distance}. The first type is usual kNN. Using the answers (gold standard for test data), it decides the sense of the current instance by looking labeled senses of $k$ neighboring instances. This version does not consider the distance values. That is, the weights of the each neighbors are equal in sense deciding process. It returns the majority sense as the predicting sense. The other baseline differs from the first and it takes into account the distance between the neighbors and the instance whose sense is in question. It returns the sense that has the minimum average distance among the senses that $k$ closest neighbors of the instance have. \href{http://goo.gl/ofm4cW}{Results can be seen in details} 
+
+\paragraph{kNN-baseline for embeddings:} \href{link}{Scores for embeddings can be seen here.}
+
