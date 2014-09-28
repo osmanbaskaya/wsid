@@ -12,7 +12,7 @@ from collections import defaultdict as dd
 
 # add.v.1
 
-dataset = sys.argv[1]
+path = sys.argv[1]
 regex = re.compile('<((\w+\.\w)\.(\d+))>')
 
 d = dd(list)
@@ -21,5 +21,5 @@ for line in sys.stdin:
     d[tw].append(line)
 
 for tw, lines in d.iteritems():
-    with open("%s/subs/%s" % (dataset, tw), 'w') as f:
+    with open("%s/%s" % (path, tw), 'w') as f:
         f.write(''.join(lines))

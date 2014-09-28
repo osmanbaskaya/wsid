@@ -82,6 +82,10 @@ sampled.%.pairs.gz: sampled.%.sub.gz
 	zcat $< | grep -P "^<.*\.v\." | python wordsub.py 100 ${SEED} | gzip > $@
 	zcat $< | grep -P "^<.*\.v\." | wc; zcat $@ | wc
 
+%.adj.pairs.gz: %.sub.gz
+	zcat $< | grep -P "^<.*\.j\." | python wordsub.py 100 ${SEED} | gzip > $@
+	zcat $< | grep -P "^<.*\.j\." | wc; zcat $@ | wc
+
 ## 2. Instance-based ##
 %.pairs.gz: %.sub.gz
 	zcat $< | python wordsub.py 100 ${SEED} | gzip > $@
@@ -97,6 +101,8 @@ SC_OPTIONS=-s ${SEED} -v -d 100
 %.verb.scode.gz: sampled.verb.pairs.gz %.verb.pairs.gz
 	zcat $^ | scode ${SC_OPTIONS} | gzip > $@
 
+%.adj.scode.gz: sampled.adj.pairs.gz %.adj.pairs.gz
+	zcat $^ | scode ${SC_OPTIONS} | gzip > $@
 
 ### Baselines ###
 
@@ -117,7 +123,7 @@ induced-gold-n-random-baseline-%: %.key ../bin/ss.jar
 
 %/subs: %.sub.gz
 	-mkdir -p $@
-	zcat $< | ./subs2dist.py $*
+	zcat $< | python instance-sep.py $@
 
 %/dists: %/subs
 	-mkdir $@
@@ -144,7 +150,7 @@ scores/%.knn-mv.txt: %/dists %.key # mv=majority voting
 
 scores/%.knn-mad.txt: %/dists %.key # mad=min_avg_dist
 	-mkdir scores/
-	-rm $@ # remove for append below
+	-rm $@ # remove for append bel
 	for i in `ls $< | sort`; do\
 		echo -n $$i"   ";\
 		for k in 1 2 3 4 5 6 7 8 10 12 15 20; do\
@@ -153,9 +159,9 @@ scores/%.knn-mad.txt: %/dists %.key # mad=min_avg_dist
 		done; echo;\
 	done
 
-%.knn-mad.tab: scores/%.knn-mad.txt
+%.knn-mad.tab: scores/%.knn-mad.txt 
 	-rm $@ # remove for append below
-	for d in 0 1 2 3 4; do\
+	for d in ${DISTS}; do\
 		for k in 1 2 3 4 5 6 7 8 10 12 15 20; do\
 			echo -ne "dist"$$d'\t'$$k'\t' >> $@;\
 			cat $< | grep -P "k = $$k$$" | grep -P "dist$$d" | awk '{sum+=$$4}END{print sum/NR}' >> $@;\
@@ -163,9 +169,9 @@ scores/%.knn-mad.txt: %/dists %.key # mad=min_avg_dist
 		echo >> $@;\
 	done;
 
-%.knn-mv.tab: scores/%.knn-mv.txt
+%.knn-mv.tab: scores/%.knn-mv.txt # call exp: make s10-test.orig-XYw-dists.knn-mv.tab DISTS="0 1 2 3"
 	-rm $@ # remove for append below
-	for d in 0 1 2 3 4; do\
+	for d in ${DISTS}; do\
 		for k in 1 2 3 4 5 6 7 8 10 12 15 20; do\
 			echo -ne "dist"$$d'\t'$$k'\t' >> $@;\
 			cat $< | grep -P "k = $$k$$" | grep -P "dist$$d" | awk '{sum+=$$4}END{print sum/NR}' >> $@;\
@@ -175,16 +181,104 @@ scores/%.knn-mad.txt: %/dists %.key # mad=min_avg_dist
 	
 ### Embedding KNN ###
 
-%/emb-dists: %.noun.scode.gz
+## Original (--subs_embed_same) POS embeddings.
+
+%/embeddings/XYw.noun.scode.gz: %.noun.scode.gz %.sub.gz
+	-mkdir $*/embeddings
+	python concat-XYw.py $< $^ --subs_embed_same 2>$*-XYw.noun.err | gzip > $@
+
+%/embeddings/XYw.verb.scode.gz: %.verb.scode.gz %.sub.gz
+	-mkdir $*/embeddings
+	python concat-XYw.py $< $^ --subs_embed_same 2>$*-XYw.verb.err | gzip > $@  
+
+%/embeddings/XYw.adj.scode.gz: %.adj.scode.gz %.sub.gz
+	-mkdir $*/embeddings
+	python concat-XYw.py $< $^ --subs_embed_same 2>$*-XYw.adj.err | gzip > $@  
+
+%/embeddings/XYb.noun.scode.gz: %.noun.scode.gz %.noun.pairs.gz
+	-mkdir $*/embeddings
+	python concat-XYb.py $^ 2>$*-XYb.noun.err | gzip > $@
+
+%/embeddings/XYb.verb.scode.gz: %.verb.scode.gz %.verb.pairs.gz
+	-mkdir $*/embeddings
+	python concat-XYb.py $^ 2>$*-XYb.verb.err | gzip > $@ 
+
+%/embeddings/XYb.adj.scode.gz: %.adj.scode.gz %.adj.pairs.gz
+	-mkdir $*/embeddings
+	python concat-XYb.py $^ 2>$*-XYb.adj.err | gzip > $@ 
+
+s13-test/embeddings/orig-%: s13-test/embeddings/%.noun.scode.gz s13-test/embeddings/%.verb.scode.gz s13-test/embeddings/%.adj.scode.gz 
 	-mkdir -p $@
-	touch $@
+	zcat $^ | python instance-sep.py $@
+
+s10-test/embeddings/orig-%: s10-test/embeddings/%.noun.scode.gz s10-test/embeddings/%.verb.scode.gz
+	-mkdir -p $@
+	zcat $^ | python instance-sep.py $@
+
+s13-test/embeddings/%-dists: s13-test/embeddings/%
+	-mkdir $@; touch $@
 	for i in `ls $<`; do\
 		echo -n $$i"   ";\
-		for d in 0 1 2 3 4; do\
+		for d in 0 1 2 3; do\
 			echo -n $$d", ";\
-			python instance_mapper.py <(cat $</$$i | preinput.py | ../bin/dists -d $$d) <(cut -f1 $</$$i) |\
+			python instance_mapper.py <(cat $</$$i | python predist.py | ../bin/dists -d $$d) <(cut -f1 $</$$i) |\
 			gzip > $@/$$i.dist$$d.gz;\
 			done; echo;\
+	done
+
+s10-test/embeddings/%-dists: s10-test/embeddings/%
+	-mkdir $@; touch $@
+	for i in `ls $<`; do\
+		echo -n $$i"   ";\
+		for d in 0 1 2 3; do\
+			echo -n $$d", ";\
+			python instance_mapper.py <(cat $</$$i | python predist.py | ../bin/dists -d $$d) <(cut -f1 $</$$i) |\
+			gzip > $@/$$i.dist$$d.gz;\
+			done; echo;\
+	done
+
+scores/s13-test.%.knn-mv.txt: s13-test/embeddings/% s13-test.key # mv=majority voting 
+	-mkdir scores/
+	-rm $@ # remove for append below
+	for i in `ls $< | sort`; do\
+		echo -n $$i"   ";\
+		for k in 1 2 3 4 5 6 7 8 10 12 15 20; do\
+			echo -n $$k", ";\
+			python knn.py $$k majority_voting $</$$i s13-test.key >> $@;\
+		done; echo;\
+	done
+
+scores/s13-test.%.knn-mad.txt: s13-test/embeddings/% s13-test.key # mad=min_avg_dist
+	-mkdir scores/
+	-rm $@ # remove for append bel
+	for i in `ls $< | sort`; do\
+		echo -n $$i"   ";\
+		for k in 1 2 3 4 5 6 7 8 10 12 15 20; do\
+			echo -n $$k", ";\
+			python knn.py $$k min_avg_dist $</$$i s13-test.key >> $@;\
+		done; echo;\
+	done
+
+scores/s10-test.%.knn-mv.txt: s10-test/embeddings/% s10-test.key # mv=majority voting 
+	-mkdir scores/
+	-rm $@ # remove for append below
+	for i in `ls $< | sort`; do\
+		echo -n $$i"   ";\
+		for k in 1 2 3 4 5 6 7 8 10 12 15 20; do\
+			echo -n $$k", ";\
+			python knn.py $$k majority_voting $</$$i s10-test.key >> $@;\
+		done; echo;\
+	done
+
+scores/s10-test.%.knn-mad.txt: s10-test/embeddings/% s10-test.key # mad=min_avg_dist
+	-mkdir scores/
+	-rm $@ # remove for append bel
+	for i in `ls $< | sort`; do\
+		echo -n $$i"   ";\
+		for k in 1 2 3 4 5 6 7 8 10 12 15 20; do\
+			echo -n $$k", ";\
+			python knn.py $$k min_avg_dist $</$$i s10-test.key >> $@;\
+		done; echo;\
 	done
 
 %.clean: %
