@@ -1,4 +1,4 @@
-all: scripts fastsubs dists wkmeans scode
+all: scripts fastsubs dists wkmeans scode grid.py
 
 scripts: check
 	test -e $@ || ln -s ../src/scripts/* .
@@ -8,7 +8,7 @@ check:
 	true
 
 clean:
-	-rm *.m *.pl *.pyc *.py *.gp *.sh fastsubs subs dists scode wkmeans wordsub *.mexa64 fastsubs-omp *~  deprecated_or_old 
+	-rm *.m *.pl *.pyc *.py *.gp *.sh fastsubs subs dists scode wkmeans wordsub *.mexa64 fastsubs-omp *~  deprecated_or_old svm-train
 
 ### Reprository Check-out Commands
 ## If the latest version is required then do not set the corresponding
@@ -51,3 +51,7 @@ wkmeans: check
 	test -e ../src/wkmeans || (cd ../src/ ; git clone ${WKMEANS_GIT_REPO} ; git checkout ${WKMEANS_GIT_TAG}) 
 	cd ../src/wkmeans; make
 	test -e $@ || ln -s ../src/wkmeans/wkmeans .
+
+grid.py: check
+	test -e $@ || ln -s ../src/libsvm/tools/grid.py .
+	test -e svm-train || ln -s ../src/libsvm/svm-train .

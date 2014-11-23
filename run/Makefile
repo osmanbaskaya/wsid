@@ -4,8 +4,9 @@ SHELL := /bin/bash
 
 ### PATH
 SRILM_PATH=/ai/opt/srilm/bin/i686-m64
+LIBSVM_PATH=/ai/home/obaskaya/wsid/src/libsvm/svm-train
 
-export PATH:=.:${SRILM_PATH}:${PATH}:../bin:
+export PATH:=../bin/:.:${SRILM_PATH}:${PATH}
 
 SEED=1
 CPU=25
@@ -179,6 +180,24 @@ scores/%.knn-mad.txt: %/dists %.key # mad=min_avg_dist
 		echo >> $@;\
 	done;
 	
+
+### Substitute SVM
+%/subs-svm: %/subs %.key
+	-mkdir $@
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		python svmlib-input.py <(cat $</$$fn | cut -f1) <(cat $</$$fn | preinput.py) $*.key > $@/$$fn; \
+	done
+
+%-subs-svm-scores.txt: %/subs-svm
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		../bin/grid.py -out null -svmtrain ${LIBSVM_PATH} $</$$fn | tail -1 | tee -a $@.tmp;\
+	done
+	ls $< > $@.nm.tmp
+	paste -d ' ' $@.nm.tmp $@.tmp > $@
+	#rm $@.nm.tmp $@.tmp
+
 ### Embedding KNN ###
 
 ## Original (--subs_embed_same) POS embeddings.

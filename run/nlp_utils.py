@@ -114,6 +114,14 @@ def traverse(o, tree_types=(list, tuple)):
     else:
         yield o
 
+def read_semeval_key_file(fn):
+    d = dict()
+    for line in fopen(fn):
+        line = line.split()
+        d[line[1]] = line[2].split('::/')[0]
+    return d
+
+
 #a = [1, 1, 1, 2, 2, 2, 3, 3]
 #b = ['a', 'a', 'a', 'b', 'b', 'b', 'c', 'c']
 #print calc_perp(a)
