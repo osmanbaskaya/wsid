@@ -118,7 +118,7 @@ def read_semeval_key_file(fn):
     d = dict()
     for line in fopen(fn):
         line = line.split()
-        d[line[1]] = line[2].split('::/')[0]
+        d[line[1]] = line[2].split('::')[0]
     return d
 
 

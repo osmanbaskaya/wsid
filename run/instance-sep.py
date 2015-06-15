@@ -13,7 +13,11 @@ from collections import defaultdict as dd
 # add.v.1
 
 path = sys.argv[1]
-regex = re.compile('<((\w+\.\w)\.(\d+))>')
+regex = re.compile('<((\w+\.\w)\.(\d+))>')  # for s10, s13
+
+if path.startswith('s07-test'):
+    regex = re.compile('<((\w+\.\w)\.(.*))>')  # for s10, s13
+    print >> sys.stderr, regex
 
 d = dd(list)
 for line in sys.stdin:
