@@ -225,7 +225,7 @@ s10-test-%-scores.txt: s10-test/% # make s10-test-orig-XYw-svm-scores.txt
 		../bin/easy.py $</$$fn | grep Best | tee -a $@.tmp;\
 	done
 	ls $< > $@.nm.tmp
-	paste -d ' ' $@.nm.tmp $@.tmp > $@
+	paste -d ' ' $@.nm.tmp $@.tmp | sed -Ee 's|\w+=||g' -e "s|Best ||g" -e "s|CV ||g" -e "s|,||" > $@
 	rm $@.nm.tmp $@.tmp
 
 s13-test-%-scores.txt: s13-test/% # make s13-test-orig-XYw-svm-scores.txt
@@ -235,7 +235,7 @@ s13-test-%-scores.txt: s13-test/% # make s13-test-orig-XYw-svm-scores.txt
 		../bin/easy.py $</$$fn | grep Best | tee -a $@.tmp;\
 	done
 	ls $< > $@.nm.tmp
-	paste -d ' ' $@.nm.tmp $@.tmp > $@
+	paste -d ' ' $@.nm.tmp $@.tmp | sed -Ee 's|\w+=||g' -e "s|Best ||g" -e "s|CV ||g" -e "s|,||" > $@
 	rm $@.nm.tmp $@.tmp
 
 ### Embedding KNN ###

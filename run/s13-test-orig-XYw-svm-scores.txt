@@ -1,50 +1,50 @@
-add.v Best c=32.0, g=0.00048828125 CV rate=71.1111
-appear.v Best c=512.0, g=0.000244140625 CV rate=66.6667
-ask.v Best c=2048.0, g=0.001953125 CV rate=68.6747
-become.v Best c=2.0, g=0.015625 CV rate=80.0
-board.n Best c=32.0, g=0.001953125 CV rate=82.7957
-book.n Best c=0.03125, g=3.0517578125e-05 CV rate=90.9091
-book.v Best c=0.03125, g=0.125 CV rate=95.4545
-color.n Best c=8.0, g=0.015625 CV rate=93.1818
-common.j Best c=8.0, g=0.015625 CV rate=79.2208
-control.n Best c=512.0, g=0.000244140625 CV rate=60.0
-dark.j Best c=2048.0, g=3.81469726562e-06 CV rate=49.2958
-date.n Best c=8.0, g=0.03125 CV rate=52.2727
-dismiss.v Best c=0.03125, g=0.001953125 CV rate=92.5532
-familiar.j Best c=128.0, g=0.00390625 CV rate=82.6087
-family.n Best c=0.03125, g=0.125 CV rate=70.3704
-find.v Best c=32.0, g=0.001953125 CV rate=35.6164
-force.n Best c=32.0, g=0.015625 CV rate=67.4157
-help.v Best c=8.0, g=0.00390625 CV rate=81.1765
-image.n Best c=32.0, g=0.001953125 CV rate=61.9048
-late.j Best c=8.0, g=0.001953125 CV rate=79.7872
-life.n Best c=0.03125, g=3.0517578125e-05 CV rate=51.6854
-live.v Best c=512.0, g=6.103515625e-05 CV rate=70.4545
-lose.v Best c=128.0, g=0.00048828125 CV rate=78.4946
-meet.v Best c=0.5, g=0.015625 CV rate=76.4045
-new.j Best c=0.03125, g=3.0517578125e-05 CV rate=78.3133
-number.n Best c=0.5, g=0.125 CV rate=61.4583
-paper.n Best c=8.0, g=0.0009765625 CV rate=68.5393
-part.n Best c=8.0, g=0.0625 CV rate=77.1084
-people.n Best c=0.03125, g=0.001953125 CV rate=95.9184
-poor.j Best c=32.0, g=0.015625 CV rate=54.4304
-power.n Best c=32.0, g=0.000244140625 CV rate=47.619
-read.v Best c=8.0, g=0.03125 CV rate=84.8485
-serious.j Best c=2048.0, g=3.81469726562e-06 CV rate=56.6265
-serve.v Best c=32.0, g=0.001953125 CV rate=44.3182
-severe.j Best c=0.03125, g=3.0517578125e-05 CV rate=79.6875
-sight.n Best c=8.0, g=0.0625 CV rate=55.0562
-sound.n Best c=2.0, g=0.0078125 CV rate=62.9032
-state.n Best c=8.0, g=0.015625 CV rate=80.0
-strike.v Best c=2048.0, g=3.81469726562e-06 CV rate=51.2195
-strong.j Best c=0.03125, g=0.125 CV rate=49.3976
-suggest.v Best c=8.0, g=0.125 CV rate=69.2308
-trace.n Best c=32.0, g=0.001953125 CV rate=82.3529
-trace.v Best c=0.03125, g=0.125 CV rate=80.2817
-transfer.v Best c=2.0, g=0.015625 CV rate=50.6494
-wait.v Best c=2048.0, g=0.0078125 CV rate=54.7619
-warm.j Best c=8.0, g=0.00390625 CV rate=85.0
-way.n Best c=8.0, g=0.015625 CV rate=62.069
-win.v Best c=512.0, g=6.103515625e-05 CV rate=80.8219
-window.n Best c=2.0, g=0.25 CV rate=66.6667
-write.v Best c=8.0, g=0.0625 CV rate=55.5556
+add.v 32.0 0.00048828125 71.1111
+appear.v 512.0 0.000244140625 66.6667
+ask.v 2048.0 0.001953125 68.6747
+become.v 2.0 0.015625 80.0
+board.n 32.0 0.001953125 82.7957
+book.n 0.03125 3.0517578125e-05 90.9091
+book.v 0.03125 0.125 95.4545
+color.n 8.0 0.015625 93.1818
+common.j 8.0 0.015625 79.2208
+control.n 512.0 0.000244140625 60.0
+dark.j 2048.0 3.81469726562e-06 49.2958
+date.n 8.0 0.03125 52.2727
+dismiss.v 0.03125 0.001953125 92.5532
+familiar.j 128.0 0.00390625 82.6087
+family.n 0.03125 0.125 70.3704
+find.v 32.0 0.001953125 35.6164
+force.n 32.0 0.015625 67.4157
+help.v 8.0 0.00390625 81.1765
+image.n 32.0 0.001953125 61.9048
+late.j 8.0 0.001953125 79.7872
+life.n 0.03125 3.0517578125e-05 51.6854
+live.v 512.0 6.103515625e-05 70.4545
+lose.v 128.0 0.00048828125 78.4946
+meet.v 0.5 0.015625 76.4045
+new.j 0.03125 3.0517578125e-05 78.3133
+number.n 0.5 0.125 61.4583
+paper.n 8.0 0.0009765625 68.5393
+part.n 8.0 0.0625 77.1084
+people.n 0.03125 0.001953125 95.9184
+poor.j 32.0 0.015625 54.4304
+power.n 32.0 0.000244140625 47.619
+read.v 8.0 0.03125 84.8485
+serious.j 2048.0 3.81469726562e-06 56.6265
+serve.v 32.0 0.001953125 44.3182
+severe.j 0.03125 3.0517578125e-05 79.6875
+sight.n 8.0 0.0625 55.0562
+sound.n 2.0 0.0078125 62.9032
+state.n 8.0 0.015625 80.0
+strike.v 2048.0 3.81469726562e-06 51.2195
+strong.j 0.03125 0.125 49.3976
+suggest.v 8.0 0.125 69.2308
+trace.n 32.0 0.001953125 82.3529
+trace.v 0.03125 0.125 80.2817
+transfer.v 2.0 0.015625 50.6494
+wait.v 2048.0 0.0078125 54.7619
+warm.j 8.0 0.00390625 85.0
+way.n 8.0 0.015625 62.069
+win.v 512.0 6.103515625e-05 80.8219
+window.n 2.0 0.25 66.6667
+write.v 8.0 0.0625 55.5556
