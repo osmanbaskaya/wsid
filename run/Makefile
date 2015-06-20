@@ -109,8 +109,11 @@ SC_OPTIONS=-s ${SEED} -v -d 100
 
 ## Supervised Random Baseline ##
 
-supervised-random-baseline-%: %.key
-	python scorer.py <(python supervised-random-baseline.py $<) $<
+shuffled-supervised-random-baseline-%: %.key
+	python scorer.py <(python supervised-random-baseline.py $< shuffled) $<
+
+weighted-supervised-random-baseline-%: %.key
+	python scorer.py <(python supervised-random-baseline.py $< weighted) $<
 
 induced-random-baseline-%: %.key ../bin/ss.jar # make induced-random-baseline-s13-test NUM_SENSE=3
 	python random-baseline.py $< ${NUM_SENSE} > /tmp/$@.${NUM_SENSE}
