@@ -52,4 +52,8 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+*.gz
+*.err
+*.png
+*.out
 
