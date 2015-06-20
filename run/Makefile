@@ -189,21 +189,54 @@ scores/%.knn-mad.txt: %/dists %.key # mad=min_avg_dist
 		python svmlib-input.py <(cat $</$$fn | cut -f1) <(cat $</$$fn | preinput.py) $*.key > $@/$$fn; \
 	done
 
-s10-test/%-svm: s10-test/embeddings/% s10-test.key # make s10-test/orig-XYw-svm
-	-mkdir $@
-	for fn in `ls $<`; do \
-		echo $$fn processing;\
-		python svmlib-input-embedding.py <(cat $</$$fn | cut -f1) $</$$fn s10.key > $@/$$fn; \
-	done
 
+# No need to use easy because scaling is not necessary (we're using probability -- it's scaled [0,1] already)
 %-subs-svm-scores.txt: %/subs-svm
+	-rm $@.nm.tmp $@.tmp  # clear because of append in tee
 	for fn in `ls $<`; do \
 		echo $$fn processing;\
 		../bin/grid.py -log2g -3,-15,-1 -out null -svmtrain ${LIBSVM_PATH} $</$$fn | tail -1 | tee -a $@.tmp;\
 	done
 	ls $< > $@.nm.tmp
 	paste -d ' ' $@.nm.tmp $@.tmp > $@
-	#rm $@.nm.tmp $@.tmp
+	rm $@.nm.tmp $@.tmp
+	-rm *.png *.scale *.range *.scale.out
+
+### Embedding SVM
+
+s10-test/%-svm: s10-test/embeddings/% s10-test.key # make s10-test/orig-XYw-svm
+	-mkdir $@
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		python svmlib-input-embedding.py <(cat $</$$fn | cut -f1) $</$$fn s10-test.key > $@/$$fn; \
+	done
+
+s13-test/%-svm: s13-test/embeddings/% s13-test.key # make s13-test/orig-XYw-svm
+	-mkdir $@
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		python svmlib-input-embedding.py <(cat $</$$fn | cut -f1) $</$$fn s13-test.key > $@/$$fn; \
+	done
+
+s10-test-%-scores.txt: s10-test/% # make s10-test-orig-XYw-svm-scores.txt
+	-rm $@.nm.tmp $@.tmp  # clear because of append in tee
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		../bin/easy.py $</$$fn | grep Best | tee -a $@.tmp;\
+	done
+	ls $< > $@.nm.tmp
+	paste -d ' ' $@.nm.tmp $@.tmp > $@
+	rm $@.nm.tmp $@.tmp
+
+s13-test-%-scores.txt: s13-test/% # make s13-test-orig-XYw-svm-scores.txt
+	-rm $@.nm.tmp $@.tmp  # clear because of append in tee
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		../bin/easy.py $</$$fn | grep Best | tee -a $@.tmp;\
+	done
+	ls $< > $@.nm.tmp
+	paste -d ' ' $@.nm.tmp $@.tmp > $@
+	rm $@.nm.tmp $@.tmp
 
 ### Embedding KNN ###
 
@@ -310,3 +343,6 @@ scores/s10-test.%.knn-mad.txt: s10-test/embeddings/% s10-test.key # mad=min_avg_
 %.clean: %
 	rm -ri $*
 	#cat $< | grep -P "k = $$k$$" | grep -P "$$d" | awk 'BEGIN{sum=0}{sum+=$$4}END{printf("%s\t%s\t%f\n", $$d, $$k, sum/NR)}';\
+
+clean-svmlib: 
+	-rm *.png *.scale *.range *.scale.out
