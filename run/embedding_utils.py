@@ -14,14 +14,17 @@ import numpy as np
 import sys
 import gzip
 
+
 def get_X(embeddings):
     return embeddings[0]
+
 
 def get_Y(embeddings):
     if len(embeddings.keys()) >= 2:
         return embeddings[1]
     else:
         return embeddings[0]
+
 
 def read_embedding_vectors(embedding_f, wordset=None):
     """ word_set is a set that indicates the tokens to fetch
@@ -69,10 +72,11 @@ def concat_XYbar(embedding_d, subs, dim=25):
         d[X] = (np.concatenate(embedding_d[0][X][0], Y_bar), 1)
     return d
 
+
 def concat_XYw(embedding_d1, embedding_d2, sub_vecs, target_word_strip_func=None):
     """ Combined embedding, weighted by substitute probabilities (i.e, Volkan's method) 
         original_X_embeddings indicates that sub_vecs target words and embeddings are matches.
-        We need this because this methods can concatenate embeddings that are not based on
+        We need this because this method can concatenate embeddings that are not based on
         the data which we get substitute distributions.
     """
 
@@ -88,10 +92,10 @@ def concat_XYw(embedding_d1, embedding_d2, sub_vecs, target_word_strip_func=None
         if func is not None:
             t = func(target_word)
         try:
-            X = embedding_d1[t][0] # [0] -> vector, [1] -> #of occurrences
+            X = embedding_d1[t][0]  # [0] -> vector, [1] -> #of occurrences
         except KeyError:
             print >> sys.stderr, "no X embedding for %s" % t
-            continue # pass this on
+            continue  # pass this on
         Y_bar = np.zeros(dim)
         for sub, prob in sub_probs:
             try: 
@@ -101,6 +105,7 @@ def concat_XYw(embedding_d1, embedding_d2, sub_vecs, target_word_strip_func=None
         to_return.append(np.concatenate((X, Y_bar)))
         target_words.append(target_word)
     return target_words, to_return
+
 
 def write_vec(embedding_d, fn=None):
     f = sys.stdout

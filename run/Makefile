@@ -192,7 +192,7 @@ scores/%.knn-mad.txt: %/dists %.key # mad=min_avg_dist
 %-subs-svm-scores.txt: %/subs-svm
 	for fn in `ls $<`; do \
 		echo $$fn processing;\
-		../bin/grid.py -out null -svmtrain ${LIBSVM_PATH} $</$$fn | tail -1 | tee -a $@.tmp;\
+		../bin/grid.py -log2g -3,-15,-1 -out null -svmtrain ${LIBSVM_PATH} $</$$fn | tail -1 | tee -a $@.tmp;\
 	done
 	ls $< > $@.nm.tmp
 	paste -d ' ' $@.nm.tmp $@.tmp > $@
