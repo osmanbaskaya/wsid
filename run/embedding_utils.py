@@ -9,10 +9,20 @@ such as reading, vector concetanation and so on.
 
 from nlp_utils import fopen
 from collections import defaultdict as dd
-from collections import Counter
+from collections import Counter, namedtuple
 import numpy as np
 import sys
 import gzip
+
+
+SubstituteDistribution = namedtuple('SubstituteDistribution',
+                                    'substitute, probability')
+
+
+def exclude_missing_subs_and_normalize(sub_probs, vectors):
+    sub_probs = [e for e in sub_probs if e.substitute in vectors]
+    total_prob = sum(e.probability for e in sub_probs)
+    return [(e.substitute, e.probability / total_prob) for e in sub_probs]
 
 
 def get_X(embeddings):
@@ -26,31 +36,35 @@ def get_Y(embeddings):
         return embeddings[0]
 
 
-def read_embedding_vectors(embedding_f, wordset=None):
+def read_embedding_vectors(embedding_f, wordset=None, not_scode_f=False):
     """ word_set is a set that indicates the tokens to fetch
         from embedding file.
     """
-    is_scode_f = False
-    if 'scode' in embedding_f:
-        is_scode_f = True
+    if not_scode_f:
+        print >> sys.stderr, "INFO: %s not S-CODE Embedding" % embedding_f
+    else:
+        print >> sys.stderr, "INFO: %s S-CODE Embedding" % embedding_f
 
     assert isinstance(wordset, set) or wordset == None, "wordset should be a set"
 
     d = dd(lambda: dict())
     for line in fopen(embedding_f):
         line = line.split()
-        if is_scode_f:
-            typ = int(line[0][0])
-            w = line[0][2:]
-            start = 2
-            count = int(line[1])
-        else:
+        if not_scode_f:
             typ = 0
             w = line[0]
             start = 1
             count = 1
+        else:
+            typ = int(line[0][0])
+            w = line[0][2:]
+            start = 2
+            count = int(line[1])
         if wordset is None or w in wordset :
             d[typ][w] = (np.array(line[start:], dtype='float64'), count)
+    for typ in d:
+        print >> sys.stderr, "Total # of embeddings: %d for type: %d" % \
+                             (len(d[typ]), typ)
     return d
 
 def concat_XY(embedding_d, subs):
@@ -86,8 +100,11 @@ def concat_XYw(embedding_d1, embedding_d2, sub_vecs, target_word_strip_func=None
     target_words = []
 
     dim = len(embedding_d2[embedding_d2.keys()[0]][0])# Y vectors dimensionality
-
+    total_context_word_used = 0
+    total_context_word = 0
     for target_word, sub_probs in sub_vecs:
+        # make it namedtuple: (substitute, probability)
+        sub_probs = map(SubstituteDistribution._make, sub_probs)
         t = target_word
         if func is not None:
             t = func(target_word)
@@ -96,7 +113,10 @@ def concat_XYw(embedding_d1, embedding_d2, sub_vecs, target_word_strip_func=None
         except KeyError:
             print >> sys.stderr, "no X embedding for %s" % t
             continue  # pass this on
+        total_context_word += len(sub_probs)
         Y_bar = np.zeros(dim)
+        sub_probs = exclude_missing_subs_and_normalize(sub_probs, embedding_d2)
+        total_context_word_used += len(sub_probs)
         for sub, prob in sub_probs:
             try: 
                 Y_bar += embedding_d2[sub][0] * prob
@@ -104,6 +124,9 @@ def concat_XYw(embedding_d1, embedding_d2, sub_vecs, target_word_strip_func=None
                 print >> sys.stderr, "no Y embedding for %s" % sub
         to_return.append(np.concatenate((X, Y_bar)))
         target_words.append(target_word)
+    print >> sys.stderr, "Ratio of used_context word and total context " \
+                         "word: %f" % \
+                         (total_context_word_used / float(total_context_word))
     return target_words, to_return
 
 

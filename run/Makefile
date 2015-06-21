@@ -113,7 +113,7 @@ shuffled-supervised-random-baseline-%: %.key
 	python scorer.py <(python supervised-random-baseline.py $< shuffled) $<
 
 weighted-supervised-random-baseline-%: %.key
-	python scorer.py <(python supervised-random-baseline.py $< weighted) $<
+	python scorer.py <(python supervised-random-baseline.py $< shuffled) $<
 
 induced-random-baseline-%: %.key ../bin/ss.jar # make induced-random-baseline-s13-test NUM_SENSE=3
 	python random-baseline.py $< ${NUM_SENSE} > /tmp/$@.${NUM_SENSE}
@@ -192,8 +192,8 @@ scores/%.knn-mad.txt: %/dists %.key # mad=min_avg_dist
 		python svmlib-input.py <(cat $</$$fn | cut -f1) <(cat $</$$fn | preinput.py) $*.key > $@/$$fn; \
 	done
 
-
-# No need to use easy because scaling is not necessary (we're using probability -- it's scaled [0,1] already)
+# No need to use easy because scaling is not necessary
+# (we're using probability -- it's scaled [0,1] already)
 %-subs-svm-scores.txt: %/subs-svm
 	-rm $@.nm.tmp $@.tmp  # clear because of append in tee
 	for fn in `ls $<`; do \
@@ -205,45 +205,9 @@ scores/%.knn-mad.txt: %/dists %.key # mad=min_avg_dist
 	rm $@.nm.tmp $@.tmp
 	-rm *.png *.scale *.range *.scale.out
 
-### Embedding SVM
+### EMBEDDING CREATION
 
-s10-test/%-svm: s10-test/embeddings/% s10-test.key # make s10-test/orig-XYw-svm
-	-mkdir $@
-	for fn in `ls $<`; do \
-		echo $$fn processing;\
-		python svmlib-input-embedding.py <(cat $</$$fn | cut -f1) $</$$fn s10-test.key > $@/$$fn; \
-	done
-
-s13-test/%-svm: s13-test/embeddings/% s13-test.key # make s13-test/orig-XYw-svm
-	-mkdir $@
-	for fn in `ls $<`; do \
-		echo $$fn processing;\
-		python svmlib-input-embedding.py <(cat $</$$fn | cut -f1) $</$$fn s13-test.key > $@/$$fn; \
-	done
-
-s10-test-%-scores.txt: s10-test/% # make s10-test-orig-XYw-svm-scores.txt
-	-rm $@.nm.tmp $@.tmp  # clear because of append in tee
-	for fn in `ls $<`; do \
-		echo $$fn processing;\
-		../bin/easy.py $</$$fn | grep Best | tee -a $@.tmp;\
-	done
-	ls $< > $@.nm.tmp
-	paste -d ' ' $@.nm.tmp $@.tmp | sed -Ee 's|\w+=||g' -e "s|Best ||g" -e "s|CV ||g" -e "s|,||" > $@
-	rm $@.nm.tmp $@.tmp
-
-s13-test-%-scores.txt: s13-test/% # make s13-test-orig-XYw-svm-scores.txt
-	-rm $@.nm.tmp $@.tmp  # clear because of append in tee
-	for fn in `ls $<`; do \
-		echo $$fn processing;\
-		../bin/easy.py $</$$fn | grep Best | tee -a $@.tmp;\
-	done
-	ls $< > $@.nm.tmp
-	paste -d ' ' $@.nm.tmp $@.tmp | sed -Ee 's|\w+=||g' -e "s|Best ||g" -e "s|CV ||g" -e "s|,||" > $@
-	rm $@.nm.tmp $@.tmp
-
-### Embedding KNN ###
-
-## Original (--subs_embed_same) POS embeddings.
+## 1. Original (--subs_embed_same) POS embeddings.
 
 %/embeddings/XYw.noun.scode.gz: %.noun.scode.gz %.sub.gz
 	-mkdir $*/embeddings
@@ -269,6 +233,8 @@ s13-test-%-scores.txt: s13-test/% # make s13-test-orig-XYw-svm-scores.txt
 	-mkdir $*/embeddings
 	python concat-XYb.py $^ 2>$*-XYb.adj.err | gzip > $@ 
 
+# 1.1 Separation and creating directory for each target word.
+
 s13-test/embeddings/orig-%: s13-test/embeddings/%.noun.scode.gz s13-test/embeddings/%.verb.scode.gz s13-test/embeddings/%.adj.scode.gz 
 	-mkdir -p $@
 	zcat $^ | python instance-sep.py $@
@@ -276,6 +242,73 @@ s13-test/embeddings/orig-%: s13-test/embeddings/%.noun.scode.gz s13-test/embeddi
 s10-test/embeddings/orig-%: s10-test/embeddings/%.noun.scode.gz s10-test/embeddings/%.verb.scode.gz
 	-mkdir -p $@
 	zcat $^ | python instance-sep.py $@
+
+## 2. Other embeddings (Word vectors come from Pos-Based scode vectors; Context vectors come 
+##    from various type of embedding representations.
+
+# Run for all embeddings: 
+# ls embeddings | grep -v simple | xargs -P 4 -I{} make s13-test/embeddings/{}.gz
+
+s10-test/embeddings/%.gz: s10-test.noun.scode.gz s10-test.verb.scode.gz embeddings/% s10-test.sub.gz
+	python concat-XYw.py <(zcat $< s10-test.verb.scode.gz) embeddings/$* s10-test.sub.gz --subs_embed_same --y-not-scode 2>s10-test-$*.err | gzip > $@
+
+s13-test/embeddings/%.gz: s13-test.noun.scode.gz s13-test.verb.scode.gz s13-test.adj.scode.gz embeddings/% s13-test.sub.gz
+	python concat-XYw.py <(zcat $< s13-test.verb.scode.gz s13-test.adj.scode.gz) embeddings/$* s13-test.sub.gz --subs_embed_same --y-not-scode 2>s13-test-$*.err | gzip > $@
+
+# 2.1 Separation and creating directory for each target word.
+
+# Run for all embeddings: 
+# ls embeddings | grep -v simple | xargs -P 4 -I{} make s13-test/embeddings/{}
+
+s10-test/embeddings/%: s10-test/embeddings/%.gz
+	-mkdir -p $@
+	zcat $^ | python instance-sep.py $@
+
+s13-test/embeddings/%: s13-test/embeddings/%.gz
+	-mkdir -p $@
+	zcat $^ | python instance-sep.py $@
+
+### Embedding SVM
+
+s10-test/%-svm: s10-test/embeddings/% s10-test.key # make s10-test/orig-XYw-svm
+	-mkdir $@
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		python svmlib-input-embedding.py <(cat $</$$fn | cut -f1) $</$$fn s10-test.key > $@/$$fn; \
+	done
+
+s13-test/%-svm: s13-test/embeddings/% s13-test.key # make s13-test/orig-XYw-svm
+	-mkdir $@
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		python svmlib-input-embedding.py <(cat $</$$fn | cut -f1) $</$$fn s13-test.key > $@/$$fn; \
+	done
+
+# Run for embeddings in embeddings/ directory.
+# ls embeddings | grep -v simple | xargs -P 4 -I{} make s13-test-{}-svm-scores.txt
+
+s10-test-%-scores.txt: s10-test/% # make s10-test-orig-XYw-svm-scores.txt
+	-rm $@.nm.tmp $@.tmp  # clear because of append in tee
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		../bin/easy.py $</$$fn | grep Best | tee -a $@.tmp;\
+	done
+	ls $< > $@.nm.tmp
+	paste -d ' ' $@.nm.tmp $@.tmp | sed -Ee 's|\w+=||g' -e "s|Best ||g" -e "s|CV ||g" -e "s|,||" > $@
+	rm $@.nm.tmp $@.tmp
+
+s13-test-%-scores.txt: s13-test/% # make s13-test-orig-XYw-svm-scores.txt
+	-rm $@.nm.tmp $@.tmp  # clear because of append in tee
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		../bin/easy.py $</$$fn | grep Best | tee -a $@.tmp;\
+	done
+	ls $< > $@.nm.tmp
+	paste -d ' ' $@.nm.tmp $@.tmp | sed -Ee 's|\w+=||g' -e "s|Best ||g" -e "s|CV ||g" -e "s|,||" > $@
+	rm $@.nm.tmp $@.tmp
+
+
+### Embedding KNN ###
 
 s13-test/embeddings/%-dists: s13-test/embeddings/%
 	-mkdir $@; touch $@

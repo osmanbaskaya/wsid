@@ -56,4 +56,6 @@ docs/_build/
 *.err
 *.png
 *.out
+*.scale
+*.range
 
