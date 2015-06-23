@@ -3,7 +3,8 @@
 __author__ = "Osman Baskaya"
 
 """
-Take absolute difference between two list
+Script that calculate absolute difference between different systems"
+Example: python absolute-diff.py 3 s13-test-globalcontext-svm-scores.txt s13-test-glove-svm-scores.txt s13-test-multilingual-svm-scores.txt s13-test-orig-XYw-svm-scores.txt
 """
 
 import sys
@@ -18,4 +19,4 @@ score_lists = map(np.array, score_lists)
 score_comb = list(combinations(score_lists, 2))
 
 for (f1, f2), (score1, score2) in izip(file_comb, score_comb):
-    print f1, f2, sum(abs(score1-score2)) / len(score1)
+    print "%s\t%s\t%f" % (f1, f2, sum(abs(score1-score2)) / len(score1))
