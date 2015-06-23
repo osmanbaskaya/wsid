@@ -268,6 +268,23 @@ s13-test/embeddings/%: s13-test/embeddings/%.gz
 	-mkdir -p $@
 	zcat $^ | python instance-sep.py $@
 
+# 3. Y-based embeddings. Only Context Vector representation counts.
+
+s10-test/embeddings/%-Y: s10-test/embeddings/%
+	-mkdir -p $@
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		cat $</$$fn | cut -f1,2,103- > $@/$$fn;\
+	done
+
+s13-test/embeddings/%-Y: s13-test/embeddings/%
+	-mkdir -p $@
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		cat $</$$fn | cut -f1,2,103- > $@/$$fn;\
+	done
+
+
 ### Embedding SVM
 
 s10-test/%-svm: s10-test/embeddings/% s10-test.key # make s10-test/orig-XYw-svm

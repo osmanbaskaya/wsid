@@ -130,6 +130,34 @@ def concat_XYw(embedding_d1, embedding_d2, sub_vecs, target_word_strip_func=None
     return target_words, to_return
 
 
+# def create_Yw(embeddings, sub_vecs):
+      # Can be obsolete. Try to solve it with cut -f1,2,100-
+#     to_return = []
+#     target_words = []
+#
+#     dim = len(embeddings[embeddings.keys()[0]][0])# Y vectors dimensionality
+#     total_context_word_used = 0
+#     total_context_word = 0
+#     for target_word, sub_probs in sub_vecs:
+#         # make it namedtuple: (substitute, probability)
+#         sub_probs = map(SubstituteDistribution._make, sub_probs)
+#         total_context_word += len(sub_probs)
+#         Y_bar = np.zeros(dim)
+#         sub_probs = exclude_missing_subs_and_normalize(sub_probs, embeddings)
+#         total_context_word_used += len(sub_probs)
+#         for sub, prob in sub_probs:
+#             try:
+#                 Y_bar += embeddings[sub][0] * prob
+#             except KeyError:
+#                 print >> sys.stderr, "no Y embedding for %s" % sub
+#         to_return.append(Y_bar)
+#         target_words.append(target_word)
+#     print >> sys.stderr, "Ratio of used_context word and total context " \
+#                          "word: %f" % \
+#                          (total_context_word_used / float(total_context_word))
+#     return target_words, to_return
+
+
 def write_vec(embedding_d, fn=None):
     f = sys.stdout
     if fn is not None:
