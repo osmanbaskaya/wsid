@@ -284,6 +284,15 @@ s13-test/embeddings/%-Y: s13-test/embeddings/%
 		cat $</$$fn | cut -f1,2,103- > $@/$$fn;\
 	done
 
+# 4. X-based embedding. Only for SCODE
+
+%-test/embeddings/orig-XYw-X: %-test/embeddings/orig-XYw
+	-mkdir -p $@
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		cat $</$$fn | cut -f1-103 > $@/$$fn;\
+	done
+
 
 ### Embedding SVM
 
