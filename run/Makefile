@@ -233,6 +233,10 @@ scores/%.knn-mad.txt: %/dists %.key # mad=min_avg_dist
 	-mkdir $*/embeddings
 	python concat-XYb.py $^ 2>$*-XYb.adj.err | gzip > $@ 
 
+%/embeddings/XYw.global.scode.gz: %.global.scode.gz %.sub.gz
+	-mkdir $*/embeddings
+	python concat-XYw.py $< $^ --subs_embed_same 2>$*-XYw.global.err | gzip > $@  
+
 # 1.1 Separation and creating directory for each target word.
 
 s13-test/embeddings/orig-%: s13-test/embeddings/%.noun.scode.gz s13-test/embeddings/%.verb.scode.gz s13-test/embeddings/%.adj.scode.gz 
@@ -240,6 +244,10 @@ s13-test/embeddings/orig-%: s13-test/embeddings/%.noun.scode.gz s13-test/embeddi
 	zcat $^ | python instance-sep.py $@
 
 s10-test/embeddings/orig-%: s10-test/embeddings/%.noun.scode.gz s10-test/embeddings/%.verb.scode.gz
+	-mkdir -p $@
+	zcat $^ | python instance-sep.py $@
+
+%/embeddings/global-XYw: %/embeddings/XYw.global.scode.gz
 	-mkdir -p $@
 	zcat $^ | python instance-sep.py $@
 
@@ -401,6 +409,18 @@ scores/s10-test.%.knn-mad.txt: s10-test/embeddings/% s10-test.key # mad=min_avg_
 			python knn.py $$k min_avg_dist $</$$i s10-test.key >> $@;\
 		done; echo;\
 	done
+
+### AD-HOC targets
+global.scode.gz: global.small.pairs.gz s13-test.verb.pairs.gz s13-test.noun.pairs.gz s13-test.adj.pairs.gz s10-test.verb.pairs.gz s10-test.noun.pairs.gz
+	zcat <(zcat s13-test.verb.pairs.gz s13-test.noun.pairs.gz s13-test.adj.pairs.gz | sed 's|^<|<s13.|g') <(zcat s10-test.verb.pairs.gz s10-test.noun.pairs.gz | sed 's|^<|<s10.|g') | scode ${SC_OPTIONS} | gzip > $@
+
+s13-test.global.scode.gz: global.scode.gz
+	zcat $< | grep -vP '^0:<s10' | sed 's|^<s13.|<|g' | gzip $@
+
+s10-test.global.scode.gz: global.scode.gz
+	zcat $< | grep -vP '^0:<s13' | sed 's|^0:<s10.|0:<|g' | gzip $@
+
+## Cleaning 
 
 %.clean: %
 	rm -ri $*
