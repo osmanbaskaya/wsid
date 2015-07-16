@@ -410,15 +410,22 @@ scores/s10-test.%.knn-mad.txt: s10-test/embeddings/% s10-test.key # mad=min_avg_
 		done; echo;\
 	done
 
+### Clustering
+
+
 ### AD-HOC targets
-global.scode.gz: global.small.pairs.gz s13-test.verb.pairs.gz s13-test.noun.pairs.gz s13-test.adj.pairs.gz s10-test.verb.pairs.gz s10-test.noun.pairs.gz
-	zcat <(zcat s13-test.verb.pairs.gz s13-test.noun.pairs.gz s13-test.adj.pairs.gz | sed 's|^<|<s13.|g') <(zcat s10-test.verb.pairs.gz s10-test.noun.pairs.gz | sed 's|^<|<s10.|g') | scode ${SC_OPTIONS} | gzip > $@
+
+global.scode.gz: global.pairs.gz s13-test.verb.pairs.gz s13-test.noun.pairs.gz s13-test.adj.pairs.gz s10-test.verb.pairs.gz s10-test.noun.pairs.gz
+	cat <(zcat $<) <(zcat s13-test.verb.pairs.gz s13-test.noun.pairs.gz s13-test.adj.pairs.gz | sed 's|^<|<s13.|g') <(zcat s10-test.verb.pairs.gz s10-test.noun.pairs.gz | sed 's|^<|<s10.|g') | scode ${SC_OPTIONS} | gzip > $@
 
 s13-test.global.scode.gz: global.scode.gz
-	zcat $< | grep -vP '^0:<s10' | sed 's|^<s13.|<|g' | gzip $@
+	zcat $< | grep -P '^0:<s13' | sed 's|^0:<s13.|0:<|g' | gzip > $@
 
 s10-test.global.scode.gz: global.scode.gz
-	zcat $< | grep -vP '^0:<s13' | sed 's|^0:<s10.|0:<|g' | gzip $@
+	zcat $< | grep -P '^0:<s10' | sed 's|^0:<s10.|0:<|g' | gzip > $@
+
+additional.global.scode.gz: global.scode.gz
+	zcat $< | grep -vP '^0:<s1[03]' | gzip > $@
 
 ## Cleaning 
 
