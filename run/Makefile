@@ -34,7 +34,7 @@ sampled.%.sub.gz:
 s13-test-all.context.gz: 
 	ln -s /ai/home/obaskaya/semeval13-task13/run/test.context.gz $@
 
-s13-test.context.gz: s13-test-all.context.gz s13.key
+s13-test.context.gz: s13-test-all.context.gz s13-test.key
 	python s13-instance-filter.py $^ | gzip > $@
 	zcat $@ | wc
 
@@ -419,10 +419,12 @@ global.scode.gz: global.pairs.gz s13-test.verb.pairs.gz s13-test.noun.pairs.gz s
 	cat <(zcat $<) <(zcat s13-test.verb.pairs.gz s13-test.noun.pairs.gz s13-test.adj.pairs.gz | sed 's|^<|<s13.|g') <(zcat s10-test.verb.pairs.gz s10-test.noun.pairs.gz | sed 's|^<|<s10.|g') | scode ${SC_OPTIONS} | gzip > $@
 
 s13-test.global.scode.gz: global.scode.gz
-	zcat $< | grep -P '^0:<s13' | sed 's|^0:<s13.|0:<|g' | gzip > $@
+	zcat $< | grep -vP '^0:<s10' | sed 's|^0:<s13.|0:<|g' | gzip > $@
+	#zcat $< | grep -P '^0:<s13' | sed 's|^0:<s13.|0:<|g' | gzip > $@ # target words only
 
 s10-test.global.scode.gz: global.scode.gz
-	zcat $< | grep -P '^0:<s10' | sed 's|^0:<s10.|0:<|g' | gzip > $@
+	zcat $< | grep -vP '^0:<s13' | sed 's|^0:<s10.|0:<|g' | gzip > $@
+	#zcat $< | grep -P '^0:<s10' | sed 's|^0:<s10.|0:<|g' | gzip > $@  # target words only
 
 additional.global.scode.gz: global.scode.gz
 	zcat $< | grep -vP '^0:<s1[03]' | gzip > $@
