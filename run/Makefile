@@ -95,7 +95,7 @@ sampled.%.pairs.gz: sampled.%.sub.gz
 
 ### SCODE ###
 
-SC_OPTIONS=-s ${SEED} -v -d 100
+SC_OPTIONS=-s ${SEED} -v -d 100 -r 5 -t 0.0001
 %.noun.scode.gz: sampled.noun.pairs.gz %.noun.pairs.gz
 	zcat $^ | scode ${SC_OPTIONS} | gzip > $@
 
@@ -237,6 +237,10 @@ scores/%.knn-mad.txt: %/dists %.key # mad=min_avg_dist
 	-mkdir $*/embeddings
 	python concat-XYw.py $< $^ --subs_embed_same 2>$*-XYw.global.err | gzip > $@  
 
+%/embeddings/XYw.global2.scode.gz: %.global2.scode.gz %.sub.gz
+	-mkdir $*/embeddings
+	python concat-XYw.py $< $^ --subs_embed_same 2>$*-XYw.global2.err | gzip > $@  
+
 # 1.1 Separation and creating directory for each target word.
 
 s13-test/embeddings/orig-%: s13-test/embeddings/%.noun.scode.gz s13-test/embeddings/%.verb.scode.gz s13-test/embeddings/%.adj.scode.gz 
@@ -248,6 +252,10 @@ s10-test/embeddings/orig-%: s10-test/embeddings/%.noun.scode.gz s10-test/embeddi
 	zcat $^ | python instance-sep.py $@
 
 %/embeddings/global-XYw: %/embeddings/XYw.global.scode.gz
+	-mkdir -p $@
+	zcat $^ | python instance-sep.py $@
+
+%/embeddings/global2-XYw: %/embeddings/XYw.global2.scode.gz
 	-mkdir -p $@
 	zcat $^ | python instance-sep.py $@
 
@@ -428,6 +436,17 @@ s10-test.global.scode.gz: global.scode.gz
 
 additional.global.scode.gz: global.scode.gz
 	zcat $< | grep -vP '^0:<s1[03]' | gzip > $@
+
+global2.scode.gz: sampled.adj.pairs.gz sampled.verb.pairs.gz sampled.noun.pairs.gz s13-test.verb.pairs.gz s13-test.noun.pairs.gz s13-test.adj.pairs.gz s10-test.verb.pairs.gz s10-test.noun.pairs.gz
+	cat <(zcat sampled.adj.pairs.gz sampled.verb.pairs.gz sampled.noun.pairs.gz) <(zcat s13-test.verb.pairs.gz s13-test.noun.pairs.gz s13-test.adj.pairs.gz | sed 's|^<|<s13.|g') <(zcat s10-test.verb.pairs.gz s10-test.noun.pairs.gz | sed 's|^<|<s10.|g') | scode ${SC_OPTIONS} | gzip > $@
+
+s13-test.global2.scode.gz: global2.scode.gz
+	zcat $< | grep -vP '^0:<s10' | sed 's|^0:<s13.|0:<|g' | gzip > $@
+	#zcat $< | grep -P '^0:<s13' | sed 's|^0:<s13.|0:<|g' | gzip > $@ # target words only
+
+s10-test.global2.scode.gz: global2.scode.gz
+	zcat $< | grep -vP '^0:<s13' | sed 's|^0:<s10.|0:<|g' | gzip > $@
+	#zcat $< | grep -P '^0:<s10' | sed 's|^0:<s10.|0:<|g' | gzip > $@  # target words only
 
 ## Cleaning 
 
