@@ -420,6 +420,37 @@ scores/s10-test.%.knn-mad.txt: s10-test/embeddings/% s10-test.key # mad=min_avg_
 
 ### Clustering
 
+## LOCAL, WORD, DIFFERENT K and GOLD 
+
+s13-test-%-kmeans-locale-with-word-sense-score.tsv: s13-test/embeddings/%/
+	echo -n $<" k= ";\
+	for i in 2 3 4 5 6 7 8 9 10 12 14 18 20 22; do\
+		echo -n $$i", ";\
+		python wkmeans-run.py --approach locale --sense-finding word --key-file s13-test.key --input $</* --k $$i >> $@;\
+	done;\
+	echo 'gold';\
+	python wkmeans-run.py --approach locale --sense-finding word --key-file s13-test.key --input $</* --use-gold-k >> $@;\
+	cat $@
+
+s10-test-%-kmeans-locale-with-word-sense-score.tsv: s10-test/embeddings/%/
+	echo -n $<" k= ";\
+	for i in 2 3 4 5 6 7 8 9 10 12; do\
+		echo -n $$i", ";\
+		python wkmeans-run.py --approach locale --sense-finding word --key-file s10-test.key --input $<* --k $$i >> $@;\
+	done;\
+	echo 'gold';\
+	python wkmeans-run.py --approach locale --sense-finding word --key-file s10-test.key --input $<* --use-gold-k >> $@;\
+	cat $@
+
+
+s13-test-%-kmeans-pos-based-with-word-sense-score.tsv: s13-test/embeddings/%/
+	echo -n $<" k= ";\
+	for i in 2 3 4 5 6 7 8 9 10 12 14 18 20 22; do\
+		echo -n $$i", ";\
+		python wkmeans-run.py --approach pos-based --sense-finding word --key-file s13-test.key --input $<* --k $$i >> $@;\
+	done;\
+	cat $@
+
 
 ### AD-HOC targets
 

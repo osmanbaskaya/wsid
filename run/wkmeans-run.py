@@ -6,11 +6,11 @@ import argparse
 import os
 import tempfile
 from collections import defaultdict as dd
+from subprocess import check_output
 
 
 kmeans_base = "../bin/wkmeans -r {} -l -w -s {} -k {} 2>/dev/null";
-output_formatter = "python kmeans_output_formatter.py"
-kmeans_out_base = "gzip >> {}/{}.km.gz & \n"
+#kmeans_out_base = "gzip >> {}/{}.km.gz & \n"
 
 scorer = '/usr/bin/java -jar ../bin/ss.jar -s'
 
@@ -32,7 +32,9 @@ def find_num_senses_of_each_word(key_file):
 
 
 def run(input, kmeans_input_base, pair_file, sense_finding, key_file, num_of_iter, k, 
-        use_gold_k=False, chunk_size=10, column=None):
+        use_gold_k=False, chunk_size=10, column=None, evaluate_separately=False):
+
+    output_formatter = "python kmeans_output_formatter.py > {}/{}.km & \n"
 
     if use_gold_k:
         sense_dict = find_num_senses_of_each_word(key_file)
@@ -45,21 +47,37 @@ def run(input, kmeans_input_base, pair_file, sense_finding, key_file, num_of_ite
             basename = os.path.basename(f)
             inp = kmeans_input_base.format(f)
             kmeans = kmeans_base.format(num_of_iter, 1, sense_dict.get(basename, k))
-            out = kmeans_out_base.format(path, basename)
+            #out = kmeans_out_base.format(path, basename)
+            output = output_formatter.format(path, basename)
             if column is None:
-                process += ' | '.join([inp, kmeans, output_formatter, out])
+                process += ' | '.join([inp, kmeans, output])
             else:
-                process += ' | '.join([inp, column, kmeans, output_formatter, out])
-        print >> sys.stderr, process
+                process += ' | '.join([inp, column, kmeans, output])
+        #print >> sys.stderr, process
         os.system(process + "wait")
-    os.system('zcat {}/*.km.gz > {}/system_file.txt'.format(path, path))
-    os.system('{} {} {}/system_file.txt | tail -2 | head -1'.format(scorer, key_file, path))
+    return evaluate(key_file, path, evaluate_separately)
+
+def evaluate(key_file, path, evaluate_separately=False):
+    scores = []
+    if evaluate_separately:
+        for fn in os.listdir(path):
+            score = check_output('{} {} {}/{} | tail -2 | head -1'.\
+                                    format(scorer, key_file, path, fn), shell=True)
+            score = score.split('\t')[1]
+            scores.append((fn, score))
+
+    os.system('cat {}/*.km > {}/system_file.txt'.format(path, path))
+    score = check_output('{} {} {}/system_file.txt | tail -2 | head -1'.format(scorer, key_file, path), shell=True)
+    score = score.split()[-1]
+    scores.append(('all', score))
+    return scores
+
     #os.system('{} {} {}/system_file.txt'.format(scorer, key_file, path))
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--approach', required=True, choices=['local', 'global', 'pos-based'])
+    parser.add_argument('--approach', required=True, choices=['locale', 'global', 'pos-based'])
     parser.add_argument('--key-file', required=True)
     parser.add_argument('--input', nargs='+', required=True, 
                         help="System's representation file(s)")
@@ -71,7 +89,8 @@ if __name__ == '__main__':
                         help='This denotes the way of finding the sense.')
     parser.add_argument('--pair-file', help="this file contains substitutes \
                                              of each target word.")
-    parser.add_argument('--not-scode', action='store_false', default=True)
+    parser.add_argument('--not-scode', action='store_true', default=False)
+    parser.add_argument('--evaluate-separately', action='store_true', default=False)
 
     args = parser.parse_args()
     
@@ -79,9 +98,8 @@ if __name__ == '__main__':
         parser.error("One of them needs to be set: k OR use_gold_k")
 
     #print >> sys.stderr, args
-    print args.approach, args.k, args.use_gold_k, 
 
-    path = tempfile.mkdtemp()
+    path = tempfile.mkdtemp(prefix='wsid-tmp')
 
     if args.input[0].endswith('.gz'):
         kmeans_input_base= "zcat {}"
@@ -90,7 +108,7 @@ if __name__ == '__main__':
 
     column = None
 
-    if args.approach == 'local':
+    if args.approach == 'locale':
         num_of_iter = 32
     else:
         if args.k is None:
@@ -102,6 +120,15 @@ if __name__ == '__main__':
             else:
                 column = "perl -ne 'print if s/^[01]://'"
 
+    #print >> sys.stderr, args
+    #print >> sys.stderr, [kmeans_input_base, num_of_iter, args.k, column]
+    scores = run(args.input, kmeans_input_base, args.pair_file, args.sense_finding, 
+                args.key_file, num_of_iter, args.k, args.use_gold_k, 10, column, args.evaluate_separately)
 
-    run(args.input, kmeans_input_base, args.pair_file, args.sense_finding, args.key_file, 
-        num_of_iter, args.k, args.use_gold_k, 10, column)
+    if args.use_gold_k:
+        k = 'gold'
+    else:
+        k = args.k
+    
+    print scores
+    #print "{}\t{}\t{}\t{}".format(args.approach, k, args.sense_finding, scores)
