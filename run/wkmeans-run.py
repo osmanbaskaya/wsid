@@ -53,19 +53,23 @@ def run(input, kmeans_input_base, pair_file, sense_finding, key_file, num_of_ite
                 process += ' | '.join([inp, kmeans, output])
             else:
                 process += ' | '.join([inp, column, kmeans, output])
-        #print >> sys.stderr, process
+        print >> sys.stderr, process
         os.system(process + "wait")
     return evaluate(key_file, path, evaluate_separately)
 
+
 def evaluate(key_file, path, evaluate_separately=False):
     scores = []
+    total = 0
     if evaluate_separately:
-        for fn in os.listdir(path):
+        for i, fn in enumerate(os.listdir(path), 1):
             score = check_output('{} {} {}/{} | tail -2 | head -1'.\
                                     format(scorer, key_file, path, fn), shell=True)
-            score = score.split('\t')[1]
+            score = float(score.split('\t')[1])
             scores.append((fn, score))
+            total += score
 
+    # print >> sys.stderr, total / i
     os.system('cat {}/*.km > {}/system_file.txt'.format(path, path))
     score = check_output('{} {} {}/system_file.txt | tail -2 | head -1'.format(scorer, key_file, path), shell=True)
     score = score.split()[-1]
@@ -102,9 +106,9 @@ if __name__ == '__main__':
     path = tempfile.mkdtemp(prefix='wsid-tmp')
 
     if args.input[0].endswith('.gz'):
-        kmeans_input_base= "zcat {}"
+        kmeans_input_base = "zcat {}"
     else:
-        kmeans_input_base= "cat {}"
+        kmeans_input_base = "cat {}"
 
     column = None
 
@@ -114,7 +118,7 @@ if __name__ == '__main__':
         if args.k is None:
             parser.error("k cannot be None for pos-based or global approaches")
         else:
-            num_of_iter = 1
+            num_of_iter = 8
             if args.not_scode:
                 raise NotImplementedError("hello hello")
             else:
@@ -130,5 +134,6 @@ if __name__ == '__main__':
     else:
         k = args.k
     
-    print scores
-    #print "{}\t{}\t{}\t{}".format(args.approach, k, args.sense_finding, scores)
+    for score in scores:
+        print "{}\t{}\t{}\t{}".format(args.approach, k, args.sense_finding,
+                                      '{}\t{}'.format(*score))
