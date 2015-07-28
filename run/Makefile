@@ -442,14 +442,22 @@ s10-test-%-kmeans-locale-with-word-sense-score.tsv: s10-test/embeddings/%/
 	python wkmeans-run.py --approach locale --sense-finding word --key-file s10-test.key --input $<* --use-gold-k >> $@;\
 	cat $@
 
-
 s13-test-%-kmeans-pos-based-with-word-sense-score.tsv: s13-test/embeddings/%/
 	echo -n $<" k= ";\
-	for i in 2 3 4 5 6 7 8 9 10 12 14 18 20 22; do\
+	for i in 2 4 8 10 16 25 32 48 72 100; do\
 		echo -n $$i", ";\
-		python wkmeans-run.py --approach pos-based --sense-finding word --key-file s13-test.key --input $<* --k $$i >> $@;\
+		python wkmeans-pos-based.py --key-file s13-test.key --input $</* --enrichment n s13-test.noun.scode.gz v s13-test.verb.scode.gz j s13-test.adj.scode.gz --k $$i --evaluate-separately >> $@;\
 	done;\
 	cat $@
+
+s10-test-%-kmeans-pos-based-with-word-sense-score.tsv: s10-test/embeddings/%/
+	echo -n $<" k= ";\
+	for i in 2 4 8 10 16 25 32 48 72 100; do\
+		echo -n $$i", ";\
+		python wkmeans-pos-based.py --key-file s10-test.key --input $</* --enrichment n s10-test.noun.scode.gz v s10-test.verb.scode.gz --k $$i --evaluate-separately >> $@;\
+	done;\
+	cat $@
+
 
 
 ### AD-HOC targets
