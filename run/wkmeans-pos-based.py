@@ -9,7 +9,10 @@ from collections import defaultdict as dd
 from subprocess import check_output
 
 
-kmeans_base = "../bin/wkmeans -r {} -l -w -s {} -k {} 2>/dev/null"
+# WARNING: Weighted version of POS-based clustering. Follow the WEIGHTS COMMENTS.
+
+#kmeans_base = "../bin/wkmeans -r {} -l -w -s {} -k {} 2>/dev/null"
+kmeans_base = "../bin/wkmeans -r {} -l -s {} -k {} 2>/dev/null" # WEIGHTS
 #kmeans_out_base = "gzip >> {}/{}.km.gz & \n"
 
 scorer = '/usr/bin/java -jar ../bin/ss.jar -s'
@@ -30,11 +33,15 @@ def run(input, enrichment, kmeans_input_base, key_file, k, column, num_of_iter=1
         inp = kmeans_input_base.format(' '.join(files))
         if kmeans_input_base.startswith('cat'):
             ff = tempfile.NamedTemporaryFile('w', prefix='wsid-tmp')
-            p = '%s | gzip > %s' % (inp, ff.name)
+            p = '%s | cut -f1,3- | gzip > %s' % (inp, ff.name) # remove WEIGHTS.
+            # p = '%s | gzip > %s' % (inp, ff.name)
             os.system(p)
             filtered = tempfile.NamedTemporaryFile('w', prefix='wsid-tmp')
-            p = 'zcat %s | %s | gzip > %s' % (additional_file, column,
-                                              filtered.name)
+            # p = 'zcat %s | %s | gzip > %s' % (additional_file, column,
+            #                                   filtered.name)
+            # remove WEIGHTS
+            p = 'zcat %s | %s | cut -f1,3- | gzip > %s' % (additional_file,
+                                                           column, filtered.name)
             os.system(p)
             inp = "zcat %s %s" % (ff.name, filtered.name)
         kmeans = kmeans_base.format(num_of_iter, 1, k)
