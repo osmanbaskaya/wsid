@@ -458,6 +458,12 @@ s10-test-%-kmeans-pos-based-with-word-sense-score.tsv: s10-test/embeddings/%/
 	done;\
 	cat $@
 
+s10-test-%-other-cl-algo-locale-score.tsv: s10-test/embeddings/%/
+	python clustering-local.py --key-file s10-test.key --input $<* --log-level info > $@
+
+s13-test-%-other-cl-algo-locale-score.tsv: s13-test/embeddings/%/
+	python clustering-local.py --key-file s13-test.key --input $<* --log-level info > $@
+
 
 
 ### AD-HOC targets

@@ -122,6 +122,16 @@ def read_semeval_key_file(fn):
     return d
 
 
+def find_num_senses_of_each_word(key_file):
+    d = dd(set)
+    with open(key_file) as f:
+        for line in f:
+            tw, inst_id, sense = line.split()
+            d[tw].add(sense)
+
+    return dict(map(lambda tword: (tword, len(d[tword])), d))
+
+
 #a = [1, 1, 1, 2, 2, 2, 3, 3]
 #b = ['a', 'a', 'a', 'b', 'b', 'b', 'c', 'c']
 #print calc_perp(a)

@@ -7,6 +7,7 @@ import os
 import tempfile
 from collections import defaultdict as dd
 from subprocess import check_output
+from nlp_utils import find_num_senses_of_each_word
 
 
 kmeans_base = "../bin/wkmeans -r {} -l -w -s {} -k {} 2>/dev/null";
@@ -21,17 +22,7 @@ def chunks(l, n):
         yield l[i:i+n]
 
 
-def find_num_senses_of_each_word(key_file):
-    d = dd(set)
-    with open(key_file) as f:
-        for line in f:
-            tw, inst_id, sense = line.split()
-            d[tw].add(sense)
-
-    return dict(map(lambda tw: (tw, len(d[tw])), d))
-
-
-def run(input, kmeans_input_base, pair_file, sense_finding, key_file, num_of_iter, k, 
+def run(input, kmeans_input_base, pair_file, sense_finding, key_file, num_of_iter, k,
         use_gold_k=False, chunk_size=10, column=None, evaluate_separately=False):
 
     output_formatter = "python kmeans_output_formatter.py > {}/{}.km & \n"

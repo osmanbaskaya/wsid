@@ -1,0 +1,28 @@
+s10-test	Spectral_k=2,affinity=nearest_neighbors	0.5980062660210765
+s10-test	Spectral_k=4,affinity=nearest_neighbors	0.614280015955325
+s10-test	Spectral_k=5,affinity=nearest_neighbors	0.6344214664159972
+s10-test	Spectral_k=6,affinity=nearest_neighbors	0.632995097480333
+s10-test	Spectral_k=8,affinity=nearest_neighbors	0.6390539305301646
+s10-test	Spectral_k=10,affinity=nearest_neighbors	0.6366611171709053
+s10-test	Spectral_k=11,affinity=nearest_neighbors	0.6352574822674587
+
+s10-test	Spectral_k=2,affinity=rbf	0.6019937339789234
+s10-test	Spectral_k=4,affinity=rbf	0.6226146397037882
+s10-test	Spectral_k=5,affinity=rbf	0.6304694621695532
+s10-test	Spectral_k=6,affinity=rbf	0.6361096858787982
+s10-test	Spectral_k=8,affinity=rbf	0.6371843217917952
+s10-test	Spectral_k=10,affinity=rbf	0.6394908840729274
+s10-test	Spectral_k=11,affinity=rbf	0.6392132052683039
+
+s10-test	DBSCAN_eps=0.00100	0.5809100239479985
+s10-test	DBSCAN_eps=0.00300	0.5808769029021039
+s10-test	DBSCAN_eps=0.01000	0.5806966535545295
+s10-test	DBSCAN_eps=0.10000	0.5845014245014245
+s10-test	DBSCAN_eps=0.15000	0.5908417815240915
+s10-test	DBSCAN_eps=0.17000	0.5934403826443458
+s10-test	DBSCAN_eps=0.20000	0.5976998405830108
+s10-test	DBSCAN_eps=0.50000	0.5943187616941656
+
+s10-test	Spectral_k=gold,affinity=nearest_neighbors	0.6169885489659888
+s10-test	Spectral_k=gold,affinity=rbf	0.623070350327542
+
