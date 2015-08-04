@@ -4,19 +4,21 @@ This file contains the locale based approach.
 """
 
 import argparse
-import os
-from subprocess import check_output
 import logging
-import tempfile
-from itertools import cycle
 from sklearn.cluster import DBSCAN, SpectralClustering
 import numpy as np
 from wsid_utils import prepare_logger
 from nlp_utils import find_num_senses_of_each_word
+import os
+from itertools import cycle
+import tempfile
+from utils.evaluate import evaluate_wsi
+from utils.optimize import optimize, objective
+from hyperopt import hp
 
-
-SCORER = '/usr/bin/java -jar ../bin/ss.jar -s'
 LOGGER = None
+
+logging.getLogger('hyperopt').setLevel(logging.WARNING)
 
 
 def enable_logging(log_level):
@@ -46,11 +48,32 @@ def prepare_tw_input(input_files, is_weighted):
     return d
 
 
+def run_optimization_tests(input_files, key_file, is_weighted, max_eval=2000):
+    LOGGER.debug(
+        "key_file: {}, weighted= {}".format(key_file, is_weighted))
+
+    inputs = prepare_tw_input(input_files, is_weighted)
+    space = hp.choice("spectral-type",
+                      [
+                          {'n_clusters': hp.choice('n_clusters', range(2, 12)),
+                           'n_neighbors': hp.choice('n_neighbors', range(2, 20)),
+                           'affinity': 'nearest_neighbors',
+                           "cls": SpectralClustering,
+                           'random_state': 42},
+                          {'gamma': hp.lognormal('gamma', 0, 1),
+                           'affinity': 'rbf',
+                           "cls": SpectralClustering,
+                           'random_state': 42}
+                      ]
+    )
+
+    optimize(objective, inputs, key_file, space, max_eval)
+
+
 def run(input_files, key_file, is_weighted):
 
     LOGGER.debug(
         "key_file: {}, weighted= {}".format(key_file, is_weighted))
-
     inputs = prepare_tw_input(input_files, is_weighted)
     run_test(inputs, key_file)
     run_with_gold_k_vals(inputs, key_file)
@@ -99,11 +122,11 @@ def run_test(inputs, key_file):
                 all_preds.extend(map(lambda e: "%s %s %s.%s/1" %
                                                (e[0], e[1], e[0], e[2]),
                                      zip(cycle([basename]), tws, preds)))
-            f = tempfile.NamedTemporaryFile('w', prefix='wsid-%s_' % name)
+            f = tempfile.NamedTemporaryFile('w', prefix='wsid-%s_local_' % name)
             f.write('\n'.join(all_preds))
             LOGGER.debug('Algorithm: %s AnswerFile: %s', name, f.name)
-            s = evaluate(key_file, f.name)
-            print "%s\t%s\t%s" % (key_file.split('.')[0], name, s.split()[-1])
+            precision, recall, f1score = evaluate_wsi(key_file, f.name)
+            print "%s\t%s\t%s" % (key_file.split('.')[0], name, f1score)
         print
 
 
@@ -126,18 +149,12 @@ def run_with_gold_k_vals(inputs, key_file):
             all_preds.extend(map(lambda e: "%s %s %s.%s/1" %
                                            (e[0], e[1], e[0], e[2]),
                                  zip(cycle([basename]), tws, preds)))
-        f = tempfile.NamedTemporaryFile('w', prefix='wsid-%s_' % name)
+        f = tempfile.NamedTemporaryFile('w', prefix='wsid-%s_local' % name)
         f.write('\n'.join(all_preds))
         LOGGER.debug('Algorithm: %s AnswerFile: %s', name, f.name)
-        s = evaluate(key_file, f.name)
-        print "%s\t%s\t%s" % (key_file.split('.')[0], name, s.split()[-1])
+        precision, recall, f1score = evaluate_wsi(key_file, f.name)
+        print "%s\t%s\t%s" % (key_file.split('.')[0], name, f1score)
     print
-
-
-def evaluate(key_file, filename):
-    score = check_output('{} {} {} | tail -2 | head -1'
-                         .format(SCORER, key_file, filename), shell=True)
-    return score
 
 
 def main():

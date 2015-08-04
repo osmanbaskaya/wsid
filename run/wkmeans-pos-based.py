@@ -12,7 +12,7 @@ from subprocess import check_output
 # WARNING: Weighted version of POS-based clustering. Follow the WEIGHTS COMMENTS.
 
 #kmeans_base = "../bin/wkmeans -r {} -l -w -s {} -k {} 2>/dev/null"
-kmeans_base = "../bin/wkmeans -r {} -l -s {} -k {} 2>/dev/null" # WEIGHTS
+kmeans_base = "../bin/wkmeans -r {} -l -s {} -k {} 2>/dev/null"  # WEIGHTS
 #kmeans_out_base = "gzip >> {}/{}.km.gz & \n"
 
 scorer = '/usr/bin/java -jar ../bin/ss.jar -s'
@@ -28,12 +28,13 @@ def run(input, enrichment, kmeans_input_base, key_file, k, column, num_of_iter=1
         evaluate_separately=False):
 
     output_formatter = "python kmeans_output_formatter.py > {}/{}.km"
+    path = tempfile.mkdtemp(prefix='wsid-wk-k={}-{}'.format(args.k, key_file))
     for pos, files in input.iteritems():
         additional_file = enrichment[pos]
         inp = kmeans_input_base.format(' '.join(files))
         if kmeans_input_base.startswith('cat'):
             ff = tempfile.NamedTemporaryFile('w', prefix='wsid-tmp')
-            p = '%s | cut -f1,3- | gzip > %s' % (inp, ff.name) # remove WEIGHTS.
+            p = '%s | cut -f1,3- | gzip > %s' % (inp, ff.name)  # remove WEIGHTS.
             # p = '%s | gzip > %s' % (inp, ff.name)
             os.system(p)
             filtered = tempfile.NamedTemporaryFile('w', prefix='wsid-tmp')
@@ -64,6 +65,7 @@ def evaluate(key_file, path, evaluate_separately=False):
         for i, fn in enumerate(os.listdir(path), 1):
             score = check_output('{} {} {}/{} | tail -2 | head -1'. \
                                  format(scorer, key_file, path, fn), shell=True)
+            print >> sys.stderr, fn, '\n', score
             score = float(score.split('\t')[1])
             scores.append((fn, score))
             total += score
@@ -71,6 +73,7 @@ def evaluate(key_file, path, evaluate_separately=False):
     # print >> sys.stderr, total / i
     os.system('cat {}/*.km > {}/system_file.txt'.format(path, path))
     score = check_output('{} {} {}/system_file.txt | tail -2 | head -1'.format(scorer, key_file, path), shell=True)
+    print >> sys.stderr, score
     score = score.split()[-1]
     scores.append(('all', score))
     return scores
@@ -97,7 +100,6 @@ if __name__ == '__main__':
 
     #print >> sys.stderr, args
 
-    path = tempfile.mkdtemp(prefix='wsid-tmp-pos-{}'.format(args.k))
 
     if args.input[0].endswith('.gz'):
         kmeans_input_base = "zcat {}"
