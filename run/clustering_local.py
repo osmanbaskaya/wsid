@@ -14,7 +14,8 @@ from itertools import cycle
 import tempfile
 from utils.evaluate import evaluate_wsi
 from utils.optimize import optimize, objective
-from hyperopt import hp
+from utils.optimize.space import get_search_space_by_algorithm
+from sklearn.metrics.pairwise import manhattan_distances
 
 LOGGER = None
 
@@ -48,38 +49,35 @@ def prepare_tw_input(input_files, is_weighted):
     return d
 
 
-def run_optimization_tests(input_files, key_file, is_weighted, max_eval=2000):
-    LOGGER.debug(
-        "key_file: {}, weighted= {}".format(key_file, is_weighted))
+def run_optimization_tests(algorithm, input_files, key_file, is_weighted, max_eval):
 
     inputs = prepare_tw_input(input_files, is_weighted)
-    space = hp.choice("spectral-type",
-                      [
-                          {'n_clusters': hp.choice('n_clusters', range(2, 12)),
-                           'n_neighbors': hp.choice('n_neighbors', range(2, 20)),
-                           'affinity': 'nearest_neighbors',
-                           "cls": SpectralClustering,
-                           'random_state': 42},
-                          {'gamma': hp.lognormal('gamma', 0, 1),
-                           'affinity': 'rbf',
-                           "cls": SpectralClustering,
-                           'random_state': 42}
-                      ]
-    )
 
-    optimize(objective, inputs, key_file, space, max_eval)
+    search_space = get_search_space_by_algorithm(algorithm)
+
+    LOGGER.info(
+        "algorithm:{}, key_file: {}, weighted= {},  # of files: {}, "
+        "max_eval={}".format(algorithm, key_file, is_weighted,
+                             len(input_files), max_eval))
+
+    optimize(objective, inputs, key_file, search_space, max_eval)
 
 
-def run(input_files, key_file, is_weighted):
+def run(test_method, input_files, key_file, is_weighted, max_eval, algorithm):
 
-    LOGGER.debug(
-        "key_file: {}, weighted= {}".format(key_file, is_weighted))
-    inputs = prepare_tw_input(input_files, is_weighted)
-    run_test(inputs, key_file)
-    run_with_gold_k_vals(inputs, key_file)
+    if test_method == 'iterative-test':
+        inputs = prepare_tw_input(input_files, is_weighted)
+        run_test(inputs, key_file)
+        run_with_gold_k_vals(inputs, key_file)
+    elif test_method == 'optimization':
+        run_optimization_tests(algorithm, input_files, key_file, is_weighted,
+                               max_eval=max_eval)
 
 
 def run_test(inputs, key_file):
+
+    LOGGER.info("# of target word: {}, key_file: {}".format(len(inputs),
+                                                            key_file,))
     clustering_algorithms = []
 
     # Spectral Clustering
@@ -108,7 +106,7 @@ def run_test(inputs, key_file):
     epsilons = [.001, .003, 0.01, 0.1, 0.15, 0.17, .2, .5]
     group = []
     for eps in epsilons:
-        dbscan = DBSCAN(eps=eps)
+        dbscan = DBSCAN(eps=eps, metric=manhattan_distances)
         group.append(('DBSCAN_eps=%.5f' % eps, dbscan))
 
     clustering_algorithms.append(group)
@@ -126,8 +124,7 @@ def run_test(inputs, key_file):
             f.write('\n'.join(all_preds))
             LOGGER.debug('Algorithm: %s AnswerFile: %s', name, f.name)
             precision, recall, f1score = evaluate_wsi(key_file, f.name)
-            print "%s\t%s\t%s" % (key_file.split('.')[0], name, f1score)
-        print
+            LOGGER.debug("%s\t%s\t%s" % (key_file.split('.')[0], name, f1score))
 
 
 def run_with_gold_k_vals(inputs, key_file):
@@ -163,6 +160,11 @@ def main():
                         help="Whether input contains weights column as #2")
     parser.add_argument('--key-file', required=True)
     parser.add_argument('--log-level', default='info')
+    parser.add_argument('--test-method', required=True, choices=['optimization',
+                                                                 'iterative-test'])
+    parser.add_argument('--max-eval', type=int, default=200)
+    parser.add_argument('--algorithm', default='spectralclustering',
+                        help="Algorithm to optimize")
     parser.add_argument('--input', nargs='+', required=True,
                         help="System's representation file(s)")
 
@@ -172,6 +174,9 @@ def main():
 
     kwargs = dict(key_file=args.key_file,
                   is_weighted=args.is_weighted,
+                  test_method=args.test_method,
+                  max_eval=args.max_eval,
+                  algorithm=args.algorithm,
                   input_files=args.input)
 
     run(**kwargs)

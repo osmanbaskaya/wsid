@@ -15,7 +15,8 @@ LOGGER = logging.getLogger(__name__)
 def objective(inputs, key_file, kwargs):
     """The most general form of objective function. It takes all necessary
     parameters as arguments (even the algorithm's class) and evaluate the
-    algorithm for given arguments on the dataset given in `inputs` variable."""
+    algorithm for given parameter set on the dataset given in
+    `inputs` variable."""
 
     cls = kwargs.pop('cls')  # pop up the class of the algorithm
     algorithm = cls(**kwargs)
@@ -54,7 +55,7 @@ def optimize(obj_function, inputs, key_file, space, max_eval):
     f = partial(obj_function, inputs, key_file)
     best = fmin(f, space=space, algo=tpe.suggest, max_evals=max_eval,
                 trials=trials)
-    LOGGER.info(best, 1 - min(trials.losses()))
+    LOGGER.info("{}\t{}".format(best, 1 - min(trials.losses())))
 
     # Some other information:
     # print trials.trials
