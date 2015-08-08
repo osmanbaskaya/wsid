@@ -12,6 +12,7 @@ __author__ = "Osman Baskaya"
 
 """ Utility functions that are used in experiments """
 
+
 def fopen(filename):
     if filename.endswith('.gz'):
         func = gzip.open
@@ -19,11 +20,13 @@ def fopen(filename):
         func = open
     return func(filename)
 
+
 def find_files(topdir, pattern):
     for path, dirname, filelist in os.walk(topdir):
         for name in filelist:
             if fnmatch.fnmatch(name, pattern):
                 yield os.path.join(path,name)
+
 
 def calc_perp_for_dataset(fn):
     f = fopen(fn)
@@ -70,6 +73,7 @@ def calc_perp(X, weight=None):
         entropy += -p * math.log(p, 2)
     return 2 ** entropy
 
+
 def calc_perp_semeval(sense_list):
     # sense list = [['t.1/0.8723', 't.6/0.0851', 't.50/0.0213', 't.18/0.0213'], ...]
     senses = []
@@ -86,8 +90,9 @@ def calc_perp_semeval(sense_list):
     assert len(senses) == len(weight)
     return calc_perp(senses, weight)
 
+
 def calc_perp_dict(d):
-    # test etmedim
+    # Not tested
     entropy = 0.
     tt = [(key, len(val)) for key, val in d.iteritems()]
     total = sum([x[1] for x in tt])
@@ -96,8 +101,9 @@ def calc_perp_dict(d):
         entropy += -p * math.log(p, 2)
     return 2 ** entropy
 
+
 def calc_perp_dict_graded(d):
-    # test etmedim
+    # Not tested
     entropy = 0.
     tt = [(key, len(val)) for key, val in d.iteritems()]
     total = sum([x[1] for x in tt])
@@ -105,7 +111,8 @@ def calc_perp_dict_graded(d):
         p = j / total
         entropy += -p * math.log(p, 2)
     return 2 ** entropy
-    
+
+
 def traverse(o, tree_types=(list, tuple)):
     if isinstance(o, tree_types):
         for value in o:
@@ -113,6 +120,7 @@ def traverse(o, tree_types=(list, tuple)):
                 yield subvalue
     else:
         yield o
+
 
 def read_semeval_key_file(fn):
     d = dict()
