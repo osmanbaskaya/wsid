@@ -3,6 +3,7 @@ from subprocess import check_output
 from operator import itemgetter
 from itertools import izip
 from collections import defaultdict as dd
+import argparse
 from sklearn.cross_validation import StratifiedKFold, KFold
 from nlp_utils import calc_perp
 from data_load import SemevalKeyLoader
@@ -26,6 +27,7 @@ def any_chunk_is_empty(chunks):
     for train, test in chunks:
         if len(test) == 0 or len(train) == 0:
             is_empty = True
+            break
 
     return is_empty
 
@@ -74,7 +76,6 @@ def _get_train_and_test_inst(answers, instances, n_folds):
         train_test_splits.append((train_set, test_set))
 
     LOGGER.debug("Data splitted %d with %s", n_fold, cls)
-    print "Data splitted %d with %s" % (n_fold, cls)
     return train_test_splits
 
 
@@ -100,7 +101,7 @@ def get_max_sense(instance_dict, instances=None):
 
 
 def get_mapped_senses(gold_instance_dict, sys_instance_dict, train_test_splits):
-    mapped_senses = []
+    mapped_senses = dict()
     for train, test in train_test_splits:
 
         gold_train_senses = get_max_sense(gold_instance_dict, train)
@@ -114,8 +115,8 @@ def get_mapped_senses(gold_instance_dict, sys_instance_dict, train_test_splits):
 
         # Make majority vote among gold senses for each system sense occurred
         # together with the same instances.
-        mapping = dict([(s_sense, max(d[s_sense], key=lambda e: e[1])) for
-                              s_sense in d])
+        mapping = dict([(s_sense, max(d[s_sense].items(), key=lambda e: e[1])[0])
+                        for s_sense in d])
         LOGGER.debug("Mapping: %s", mapping)
 
         # Map test senses. If mapping doesn't contain any sense mapping for
@@ -123,12 +124,30 @@ def get_mapped_senses(gold_instance_dict, sys_instance_dict, train_test_splits):
         sys_test_senses = get_max_sense(sys_instance_dict, test)
         mapped_test_chunk = dict([(instance, mapping[s_sense]) for instance, s_sense
                              in izip(test, sys_test_senses) if s_sense in mapping])
-        mapped_senses.extend(mapped_test_chunk)
+        mapped_senses.update(mapped_test_chunk)
 
     return mapped_senses
 
 
-def calculate_scores_for_word(word, gold_instance_dict, mapped_system_senses):
+def calculate_all_system_scores(individual_scores):
+
+    total_precision = total_recall = 0
+    total_num_of_sys_answer = total_num_of_gold_ans = 0
+    for precision, recall, gold_set_len, sys_ans_len in individual_scores:
+        total_precision += precision * sys_ans_len
+        total_num_of_sys_answer += sys_ans_len
+        total_recall += recall * gold_set_len
+        total_num_of_gold_ans += gold_set_len
+
+    precision = total_precision / float(total_num_of_sys_answer)
+    # recall = total_recall / float(total_num_of_gold_ans)
+    recall = total_num_of_sys_answer / float(total_num_of_gold_ans)
+    f1_score = (2 * precision * recall) / (precision + recall)
+
+    return precision, recall, f1_score
+
+
+def calculate_scores_for_word(gold_instance_dict, mapped_system_senses):
     instances = gold_instance_dict.keys()
     gold_senses = get_max_sense(gold_instance_dict, instances)
 
@@ -140,7 +159,8 @@ def calculate_scores_for_word(word, gold_instance_dict, mapped_system_senses):
 
     correct = float(correct)
     precision = correct / len(mapped_system_senses)
-    recall = correct / len(instances)
+    # recall = correct / len(instances)
+    recall = len(mapped_system_senses) / float(len(instances))
     f1_score = (2 * precision * recall) / (precision + recall)
 
     return precision, recall, f1_score
@@ -151,8 +171,10 @@ def evaluate(key_file, system_file, n_folds=5):
 
     gold_answers = loader.read_keyfile(key_file)
     system_answers = loader.read_keyfile(system_file)
-
-    for word in gold_answers:
+    num_of_target_word = len(gold_answers)
+    individual_scores = []
+    total_precision = 0
+    for word in sorted(gold_answers):
         sys_instance_dict = system_answers.get(word, None)
         gold_instance_dict = gold_answers.get(word)
         if sys_instance_dict is not None:
@@ -176,23 +198,58 @@ def evaluate(key_file, system_file, n_folds=5):
                                                      train_test_splits)
             if len(mapped_system_senses) == 0:
                 LOGGER.warning("No instance mapped for %s", word)
+                individual_scores.append((0, 0, len(gold_instance_dict), 0))
             else:
-                calculate_scores_for_word(word, gold_instance_dict,
-                                          mapped_system_senses)
+                precision, recall, f1score = calculate_scores_for_word(
+                    gold_instance_dict, mapped_system_senses)
+                individual_scores.append((precision, recall,
+                                          len(gold_instance_dict),
+                                          len(mapped_system_senses)))
+                total_precision += precision
+                print "{}\t{}\t{}\t{}".format(word, precision, recall, f1score)
         else:
             LOGGER.warning("Target word %s not found in system file", word)
+
+    print '--------------------------------------------------------------------'
+    precision, recall, f1score = calculate_all_system_scores(individual_scores)
+    print "all={}_tw\t{}\t{}\t{}".format(num_of_target_word, precision, recall,
+                                         f1score)
+    print '--------------------------------------------------------------------'
+    print total_precision / 50.
+    print '===================================================================='
+
 
 
 def run_doctest():
     import doctest
+    LOGGER.info("Doc tests are started...")
     doctest.testmod()
+    LOGGER.info("Doc tests are finished...")
 
 
-def run_test(key_file, system_file):
-    evaluate(key_file, system_file)
+def main():
+    from wsid_utils import prepare_logger
+    global LOGGER
+    LOGGER = logging.getLogger(__name__)
+    logging.getLogger('sklearn').setLevel(logging.ERROR)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--key-file', required=True)
+    parser.add_argument('--system-file', required=True)
+    parser.add_argument('--log-level', default='info')
+    parser.add_argument('--function', default='evaluate')
+
+    args = parser.parse_args()
+
+    prepare_logger(args.log_level)
+
+    LOGGER.info(args)
+
+    if args.function == 'evaluate':
+        evaluate(args.key_file, args.system_file)
+    else:
+        run_doctest()
 
 
 if __name__ == '__main__':
-    # run_doctest()
-    run_test('../../s13-test.key', '../../system10.ans')
-    LOGGER.setLevel(logging.DEBUG)
+    main()
