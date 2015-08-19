@@ -117,7 +117,7 @@ if __name__ == '__main__':
     #print >> sys.stderr, [kmeans_input_base, num_of_iter, args.k, column]
     input = parse_input(args.input)
     enrichment = dict(chunks(args.enrichment, 2))
-    num_of_iter = 32
+    num_of_iter = 8
     scores = run(input, enrichment, kmeans_input_base, args.key_file,
                  args.k, column, num_of_iter, args.evaluate_separately)
 
