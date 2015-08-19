@@ -63,12 +63,12 @@ def _get_train_and_test_inst(answers, instances, n_folds):
         train_instances = itemgetter(*train)(instances)
         test_instances = itemgetter(*test)(instances)
 
-        if isinstance(test_instances, int):
+        if not isinstance(test_instances, tuple):
             test_set = (itemgetter(*test)(instances),)
         else:
             test_set = itemgetter(*test)(instances)
 
-        if isinstance(train_instances, int):
+        if not isinstance(train_instances, tuple):
             train_set = (itemgetter(*train)(instances),)
         else:
             train_set = itemgetter(*train)(instances)
@@ -141,7 +141,8 @@ def calculate_all_system_scores(individual_scores):
 
     precision = total_precision / float(total_num_of_sys_answer)
     # recall = total_recall / float(total_num_of_gold_ans)
-    recall = total_num_of_sys_answer / float(total_num_of_gold_ans)
+    # recall = total_num_of_sys_answer / float(total_num_of_gold_ans)
+    recall = precision * (total_num_of_sys_answer / float(total_num_of_gold_ans))
     f1_score = (2 * precision * recall) / (precision + recall)
 
     return precision, recall, f1_score
@@ -217,7 +218,6 @@ def evaluate(key_file, system_file, n_folds=5):
     print '--------------------------------------------------------------------'
     print total_precision / 50.
     print '===================================================================='
-
 
 
 def run_doctest():
