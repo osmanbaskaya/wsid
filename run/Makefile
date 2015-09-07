@@ -444,8 +444,8 @@ s10-test-%-kmeans-locale-with-word-sense-score.tsv: s10-test/embeddings/%/
 
 s13-test-%-kmeans-pos-based-with-word-sense-score.tsv: s13-test/embeddings/%/
 	echo -n $<" k= ";\
-	for i in 220 250 300; do\
-		echo -n $$i", ";\
+for i in 2 4 8 10 16 25 32 48 72 100 128 150 192; do\
+	echo -n $$i", ";\
 		python wkmeans-pos-based.py --key-file s13-test.key --input $</* --enrichment n s13-test.noun.scode.gz v s13-test.verb.scode.gz j s13-test.adj.scode.gz --k $$i --evaluate-separately >> $@;\
 	done;\
 	cat $@

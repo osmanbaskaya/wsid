@@ -28,7 +28,7 @@ def run(input, enrichment, kmeans_input_base, key_file, k, column, num_of_iter=1
         evaluate_separately=False):
 
     output_formatter = "python kmeans_output_formatter.py > {}/{}.km"
-    path = tempfile.mkdtemp(prefix='wsid-wk-k={}-{}'.format(args.k, key_file))
+    path = tempfile.mkdtemp(prefix='wsid-wk-pos-based-k={}-{}'.format(args.k, key_file))
     for pos, files in input.iteritems():
         additional_file = enrichment[pos]
         inp = kmeans_input_base.format(' '.join(files))

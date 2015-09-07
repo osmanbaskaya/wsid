@@ -3,6 +3,7 @@
 from __future__ import division
 import math
 from collections import Counter, defaultdict as dd
+from data_load import SemevalKeyLoader
 from itertools import izip
 import gzip
 import fnmatch
@@ -139,6 +140,34 @@ def find_num_senses_of_each_word(key_file):
 
     return dict(map(lambda tword: (tword, len(d[tword])), d))
 
+
+def calc_perp_of_words(keyfile):
+    # keyfile: loaded by SemevalKeyLoader
+    perplexities = {}
+    for word in keyfile:
+        entropy = .0
+        senses = Counter(keyfile[word][instance][0][0] for instance in keyfile[word])
+        total = float(sum(senses.values()))
+        for count in senses.values():
+            p = count / total
+            entropy += -p * math.log(p, 2)
+        perplexities[word] = 2 ** entropy
+
+    return perplexities
+
+
+def evaluate_mean_average_perp_diff(key_file, system_file):
+    loader = SemevalKeyLoader()
+    gold = loader.read_keyfile(key_file)
+    system = loader.read_keyfile(system_file)
+    gold_perp = calc_perp_of_words(gold)
+    system_perp = calc_perp_of_words(system)
+    diff = .0
+    for word in gold_perp:
+        #diff += abs(gold_perp[word] - system_perp[word])
+        diff +=  system_perp[word] - gold_perp[word] 
+
+    return diff, diff / len(gold_perp)
 
 #a = [1, 1, 1, 2, 2, 2, 3, 3]
 #b = ['a', 'a', 'a', 'b', 'b', 'b', 'c', 'c']
