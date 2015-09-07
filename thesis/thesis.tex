@@ -3,10 +3,11 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[numberedbib, nosectionbib]{apacite}
+%\usepackage{cite}
 \usepackage{ny}
 \usepackage{graphicx} 
 \usepackage{natbib}
-\usepackage{algorithm} 
+ \usepackage{algorithm} 
 \usepackage{algorithmic} 
 \usepackage{fancyhdr}
 \usepackage{index}
@@ -73,7 +74,7 @@
 
 \title{Thesis title}
 \author{Osman Başkaya}
-\date{September 2014}
+\date{September 2015}
 
 \begin{document}
 
@@ -104,16 +105,16 @@
 \section{WSI tasks}
 \subsection{SemEval 2010 WSI Task}\label{subsection:semeval10}
 \input{semeval2010.tex}
-\subsection{SemEval 2013 WSI Task}
+\subsection{SemEval 2013 WSI Task}\label{subsection:semeval13}
 \input{semeval2013.tex}
-\subsection{Pseudoword Dataset}
+\subsection{Pseudoword Dataset}\label{subsection:pseudoset}
 
-\section{All-Word task}
+\section{All-Word task}\label{section:all-word-task}
 \input{ontonotes.tex}
 
-\section{Semantic Similarity task}
+\section{Semantic Similarity task}\label{section:sem-sim-task}
 
-\chapter{Sensitivity Analysis}
+\chapter{Sensitivity Analysis}\label{chapter:sensitivity}
 
 \chapter{Conclusion}
 
@@ -132,6 +133,7 @@
 %\cite{jurgens12evaluation}
 
 \bibliographystyle{plainnat}
+%\bibliographystyle{natdin}
 \bibliography{references}
 
 
