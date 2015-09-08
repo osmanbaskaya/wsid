@@ -55,6 +55,20 @@ Paired \, FScore = \dfrac{2 * P * R}{P + R}
 
 where F(C) is the set of instance pairs consisted of the combination of each instances labeled as $c_i \in C$. F(G) is the set of instance pairs consisted of the combination of each instances annotated as $g_j \in G$. \\
 
+
+\begin{table}
+\begin{center}
+    \begin{tabular}{ | l | l | l | l |}
+    \hline  & \bf $S_1$ & \bf $S_2$ & \bf $S_2$ \\ \hline
+    \bf $K_1$ & 10 & 10 & 15 \\ \hline
+    \bf $K_2$ & 10 & 10 & 15 \\ \hline
+    \end{tabular}
+\end{center}
+    \caption{\label{table:contingency} Contingency table (S denotes gold senses, K denotes clusters)}
+\end{table}
+
+
+
 \cite{apidianaki2011quantitative} shows that paired FScore has two degenerate cases: system that induces higher number of clusters (low recall) and system that induces lower number of clusters than number of gold senses (low precision).
 
 
@@ -63,7 +77,11 @@ where F(C) is the set of instance pairs consisted of the combination of each ins
 
 \cite{rosenberg07vmeasure} claims that their proposed metric, V-Measure, solves many problems that previous methods having difficulties such as (1) dependence of data set or algorithm, (2) \emph{matching-problem} where part of the clustering is ignored in evaluation, (3) focusing complementary aspects of the nature of clustering (completeness and homogeneity) in order to be accurate evaluation. \\
 
-V-Measure is entropy-based measure that calculated by harmonic mean of its two criteria: homogeneity and completeness. Homogeneity answers the question that how strongly the clusters in clustering result assign to the one type of class. On the other hand, completeness explains that what degree of data points of each type of class assigned to the single cluster. 
+V-Measure is entropy-based measure that calculated by harmonic mean of its two criteria: homogeneity and completeness. Homogeneity answers the question that how strongly the clusters in clustering result assign to the one type of class. On the other hand, completeness explains that what degree of data points of each type of class assigned to the single cluster. \\
+
+For the discussion, let A is the contingency table where rows denote clusters ($K$) and columns denote the gold senses ($S$) and $a_{ij}$ is the number of all data points tagged by $K_i$ which are members of $S_j$. Let $N$ denotes total number of
+data points for target word $t$.
+
 
 \paragraph{Homogeneity:}
 
@@ -75,6 +93,15 @@ V-Measure is entropy-based measure that calculated by harmonic mean of its two c
       1 - \dfrac{H(S|K)}{H(S)}, & \text{otherwise}
     \end{cases}
   \end{equation}
+  
+\begin{equation}
+H(S) = -\sum\limits_{i = 1}^{|S|} \dfrac{\sum_{j=1}^{|K|}a_{ij}}{N}\,log\, \dfrac{\sum_{j=1}^{|K|}a_{ij}}{N}
+\end{equation}
+
+\begin{equation}
+H(S|K) = -\sum\limits_{i = 1}^{|K|} \sum\limits_{j = 1}^{|S|} \dfrac{a_{ij}}{N}\,log\, \dfrac{a_{ij}}{\sum_{s=1}^{|S|}a_{is}}
+\end{equation}
+
 
 \paragraph{Completeness:}
 
@@ -85,15 +112,29 @@ V-Measure is entropy-based measure that calculated by harmonic mean of its two c
       1 - \dfrac{H(K|S)}{H(K)}, & \text{otherwise}
     \end{cases}
   \end{equation} \\
+  
+\begin{equation}
+H(K) = -\sum\limits_{i = 1}^{|K|} \dfrac{\sum_{j=1}^{|S|}a_{ij}}{N}\,log\, \dfrac{\sum_{j=1}^{|S|}a_{ij}}{N}
+\end{equation}
 
-Finally, V-Measure is defined as follows: \\
+\begin{equation}
+H(K|S) = -\sum\limits_{i = 1}^{|S|} \sum\limits_{j = 1}^{|K|} \dfrac{a_{ij}}{N}\,log\, \dfrac{a_{ij}}{\sum_{s=1}^{|K|}a_{is}}
+\end{equation}
+
+Finally, V-Measure is defined as follows: 
 
 \begin{equation}
 \textit{V-Measure} = \dfrac{2 * h * c}{h + c}
 \end{equation}
 
+% TODO: Explain more about V-Measure such as symmetry (h-c), degenerate cases, normalization. You can find details in SemEval2010 and V-Measure paper.  
+% TODO: Change the example. Review the table. Provide a link.
+
+For the contingency matrix in Table \ref{table:contingency}, homogeneity is equal to .404, completeness is equal to .37 and V-Measure is equal to .386\footnote{V-Measure implementation can be found \emph{link}}. \\
+
+Although V-Measure seems to be robust measure, in SemEval 2010 WSI task, \cite{pedersen10duluth} provided baselines with different level of randomness, and showed the trend that scores were increased with the randomness of the baselines. In fact, author's two random baselines (their V-Measure scores are 18.7, 23.2) outperformed best participated system (its V-Measure score 16.2).
 
 \section{Supervised Evaluation}
-
+\label{section:supervised-eval}
 \subsection{Agirre’s method}
-
+\cite{agirre06evaluating} proposed a supervised evaluation framework for WSID systems. For each target word $t$, This framework splits the annotated data set into two: the training set and the test set. In SemEval tasks, the same splitting is used for evaluating all the systems. The training set is used for learning the mapping automatically from induced senses to gold senses for $t$. This obtained mapping is used to evaluate the instances in the test set. This supervised evaluation was firstly used in SemEval 2007 WSID task, and after that it became an important evaluation setting for consecutive SemEval WSI and WSD tasks. From my experiments, Agirre's method also penalizes systems that provide a high number of clusters since this method is not able to map an induced sense that occurred in the test set but not observed in the training set. One improvement is that instead of dividing the data randomly, division can aim to preserve the distribution of senses for both splits (e.g., Stratified K-Fold Validation).
