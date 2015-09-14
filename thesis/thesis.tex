@@ -3,15 +3,22 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[numberedbib, nosectionbib]{apacite}
+%\usepackage{cite}
 \usepackage{ny}
 \usepackage{graphicx} 
 \usepackage{natbib}
-\usepackage{algorithm} 
+ \usepackage{algorithm} 
 \usepackage{algorithmic} 
 \usepackage{fancyhdr}
 \usepackage{index}
+\usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{ifthen}
+\usepackage{makecell}
+\renewcommand{\arraystretch}{1.3}
+
+
+
 \usepackage{tipa} % IPA fonts
 \usepackage[hang,bf]{caption}
 %\usepackage{multirow}
@@ -73,7 +80,7 @@
 
 \title{Thesis title}
 \author{Osman Başkaya}
-\date{September 2014}
+\date{September 2015}
 
 \begin{document}
 
@@ -100,20 +107,12 @@
 \input{evaluation-framework.tex}
 
 \chapter{Experiments on various tasks}
-
-\section{WSI tasks}
-\subsection{SemEval 2010 WSI Task}\label{subsection:semeval10}
+\section{SemEval 2010 Lexical Sample Task}\label{subsection:semeval10}
 \input{semeval2010.tex}
-\subsection{SemEval 2013 WSI Task}
+\section{SemEval 2013 Lexical Sample Task}\label{subsection:semeval13}
 \input{semeval2013.tex}
-\subsection{Pseudoword Dataset}
-
-\section{All-Word task}
-\input{ontonotes.tex}
-
-\section{Semantic Similarity task}
-
-\chapter{Sensitivity Analysis}
+\section{Lexical Sample Experiment on Pseudoword Corpus}\label{subsection:pseudoset}
+\section{SemEval 2014 Semantic Similarity Task}\label{section:sem-sim-task}
 
 \chapter{Conclusion}
 
@@ -132,6 +131,7 @@
 %\cite{jurgens12evaluation}
 
 \bibliographystyle{plainnat}
+%\bibliographystyle{natdin}
 \bibliography{references}
 
 

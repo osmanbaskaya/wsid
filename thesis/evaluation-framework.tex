@@ -1,2 +1,140 @@
-\section{Agirre’s method}
-\section{Complex Classifiers for mapping and some discussion}
+There are three different approaches to evaluate WSID system. One alternative is manual evaluation. In other words, deciding the correctness of induced senses for each occurrence of the word manually. As predicted, this evaluation strategy is very hard, labour-intensive, and unscalable job. Moreover, manual evaluation needs to be done for every run of the system for even previously evaluated instances. A second alternative can be to use clustering metrics (which is called unsupervised evaluation) such as V-measure, F-Score, BCubed (more details: \cite{amigo09comparison}) or to utilize a mapping procedure (which is called supervised evaluation) which transforms each induced sense to senses in a given lexicon such as Wordnet (\cite{pantel02discovering}; \cite{agirre2006two}) and evaluate the system's F-Score with using mapped senses and gold annotation. The third alternative is to use extrinsic evaluation (also called \emph{evaluation in use}): Evaluate the system on a specific application such as machine translation. This approach seems to be appealing but it may not be feasible for making lots of experiments in the development stage of the system since it requires considerable amount of time and effort (\cite{agirre07semeval}). 
+
+The second approach (especially the supervised evaluation) gained popularity with SemEval 2007 Word Sense Induction task and it used in following Word Sense Induction and Disambiguation tasks. In this chapter, I will explain the most common evaluation metrics. I will start describing unsupervised evaluation methodology with three different metrics: F-Score, Paired F-Score, V-Measure. Afterwards I will continue with commonly used mapping procedure: Agirre's method.
+
+
+\section{Unsupervised Evaluation}
+This section describes three different clustering metrics and their weak points. 
+\subsection{FScore}
+Fscore (also known as clustering accuracy) whose calculation is similar to commonly used Information Retrieval metric called F-Measure \cite{van1979information} is one of the popular metric in this domain. Basically, precision is defined as the ratio of correctly tagged examples for a cluster and total cluster size and recall is defined as the ratio of correctly tagged examples and total class size. The formulation of FScore is as follows: \\
+
+Let $N$ be the number of instances, $G$ the set of classes (gold senses), $C$ the set of clusters (induced senses) and $n_{ij}$ be the number of instances that are tagged as $g_i \in G$ and elements of $c_j \in C$.  \\
+
+\begin{equation}
+R(g_i, c_j) = \dfrac{n_{ij}}{|G_i|}
+\end{equation}
+\begin{equation}
+P(g_i, c_j) = \dfrac{n_{ij}}{|C_j|}
+\end{equation}
+\begin{equation}
+F(g_i, c_j) = \dfrac{2 * R(g_i, c_j) * P(g_i, c_j)}{R(g_i, c_j) + P(g_i, c_j)}
+\end{equation}
+\begin{equation}
+FScore(G, C) = \sum\limits_{g_i \in G} \dfrac{n_{ij}}{N} \max_{c_i \in C}{F(g_i, c_j)}
+\end{equation}
+
+The highest FScore which is observed when clustering solution and the original classes are identical is 1. The higher FScore means the clustering is better. Since recall that is calculated as a ratio of common items between class $i$ and cluster $j$, answers how complete the solution is, precision part that is calculated as a proportion of items belong to cluster $j$ and also members of class $i$, thus, answers how homogeneous the given cluster $j$ with respect to class $i$. \\
+
+The crucial problem of this technique is \emph{problem of matching} which is explained in \cite{meilua03comparing}. 
+While calculating the system performance, this metric only considers the contributions of the clusters that are matched with a gold class. Thus, two significantly different system can get identical scores. \cite{agirre07semeval} noticed that FScore tends to penalize the systems that return high number of different senses, and it favors the systems with low number of induced senses.
+
+
+
+\subsection{Paired FScore}
+The second technique to calculate the performance of a WSID system is Paired FScore (\cite{artiles09role}) which is based on combinatorial approach and similar to RandIndex (\cite{rand71objective}). The idea is to use binary combination of clusters and classes, and calculate the overlap. There are 4 different options: A pair can be in 
+
+\begin{itemize}
+\item the same cluster and the same class
+\item the same cluster but the different classes
+\item the different clusters and the same class
+\item the different clusters and the different classes
+\end{itemize}
+
+Based on these four values, different approaches proposed in literature. Paired FScore is calculated as follows:
+
+\begin{equation}
+P = \dfrac{|F(C) \cap F(G)|}{|F(C)|}
+\end{equation}
+\begin{equation}
+R = \dfrac{|F(C) \cap F(G)|}{|F(G)|}
+\end{equation}
+
+\begin{equation}
+Paired \, FScore = \dfrac{2 * P * R}{P + R}
+\end{equation}
+
+where F(C) is the set of instance pairs consisted of the combination of each instances labeled as $c_i \in C$. F(G) is the set of instance pairs consisted of the combination of each instances annotated as $g_j \in G$. \\
+
+
+\begin{table}
+\begin{center}
+    \begin{tabular}{ | l | l | l | l |}
+    \hline  & \bf $S_1$ & \bf $S_2$ & \bf $S_2$ \\ \hline
+    \bf $K_1$ & 10 & 10 & 15 \\ \hline
+    \bf $K_2$ & 10 & 10 & 15 \\ \hline
+    \end{tabular}
+\end{center}
+    \caption{\label{table:contingency} Contingency table (S denotes gold senses, K denotes clusters)}
+\end{table}
+
+
+
+\cite{apidianaki2011quantitative} shows that paired FScore has two degenerate cases: system that induces higher number of clusters (low recall) and system that induces lower number of clusters than number of gold senses (low precision).
+
+
+
+\subsection{V-Measure}
+
+\cite{rosenberg07vmeasure} claims that their proposed metric, V-Measure, solves many problems that previous methods having difficulties such as (1) dependence of data set or algorithm, (2) \emph{matching-problem} where part of the clustering is ignored in evaluation, (3) focusing complementary aspects of the nature of clustering (completeness and homogeneity) in order to be accurate evaluation. \\
+
+V-Measure is entropy-based measure that calculated by harmonic mean of its two criteria: homogeneity and completeness. Homogeneity answers the question that how strongly the clusters in clustering result assign to the one type of class. On the other hand, completeness explains that what degree of data points of each type of class assigned to the single cluster. \\
+
+For the discussion, let A is the contingency table where rows denote clusters ($K$) and columns denote the gold senses ($S$) and $a_{ij}$ is the number of all data points tagged by $K_i$ which are members of $S_j$. Let $N$ denotes total number of
+data points for target word $t$.
+
+
+\paragraph{Homogeneity:}
+
+
+\begin{equation}
+    h =
+    \begin{cases}
+      1, & \text{if}\ H(S) = 0 \\
+      1 - \dfrac{H(S|K)}{H(S)}, & \text{otherwise}
+    \end{cases}
+  \end{equation}
+  
+\begin{equation}
+H(S) = -\sum\limits_{i = 1}^{|S|} \dfrac{\sum_{j=1}^{|K|}a_{ij}}{N}\,log\, \dfrac{\sum_{j=1}^{|K|}a_{ij}}{N}
+\end{equation}
+
+\begin{equation}
+H(S|K) = -\sum\limits_{i = 1}^{|K|} \sum\limits_{j = 1}^{|S|} \dfrac{a_{ij}}{N}\,log\, \dfrac{a_{ij}}{\sum_{s=1}^{|S|}a_{is}}
+\end{equation}
+
+
+\paragraph{Completeness:}
+
+\begin{equation}
+    c =
+    \begin{cases}
+      1, & \text{if}\ H(K) = 0 \\
+      1 - \dfrac{H(K|S)}{H(K)}, & \text{otherwise}
+    \end{cases}
+  \end{equation} \\
+  
+\begin{equation}
+H(K) = -\sum\limits_{i = 1}^{|K|} \dfrac{\sum_{j=1}^{|S|}a_{ij}}{N}\,log\, \dfrac{\sum_{j=1}^{|S|}a_{ij}}{N}
+\end{equation}
+
+\begin{equation}
+H(K|S) = -\sum\limits_{i = 1}^{|S|} \sum\limits_{j = 1}^{|K|} \dfrac{a_{ij}}{N}\,log\, \dfrac{a_{ij}}{\sum_{s=1}^{|K|}a_{is}}
+\end{equation}
+
+Finally, V-Measure is defined as follows: 
+
+\begin{equation}
+\textit{V-Measure} = \dfrac{2 * h * c}{h + c}
+\end{equation}
+
+% TODO: Explain more about V-Measure such as symmetry (h-c), degenerate cases, normalization. You can find details in SemEval2010 and V-Measure paper.  
+% TODO: Change the example. Review the table. Provide a link.
+
+For the contingency matrix in Table \ref{table:contingency}, homogeneity is equal to .404, completeness is equal to .37 and V-Measure is equal to .386\footnote{V-Measure implementation can be found \emph{link}}. \\
+
+Although V-Measure seems to be robust measure, in SemEval 2010 WSI task, \cite{pedersen10duluth} provided baselines with different level of randomness, and showed the trend that scores were increased with the randomness of the baselines. In fact, author's two random baselines (their V-Measure scores are 18.7, 23.2) outperformed best participated system (its V-Measure score 16.2).
+
+\section{Supervised Evaluation}
+\label{section:supervised-eval}
+\subsection{Agirre’s method}
+\cite{agirre06evaluating} proposed a supervised evaluation framework for WSID systems. For each target word $t$, This framework splits the annotated data set into two: the training set and the test set. In SemEval tasks, the same splitting is used for evaluating all the systems. The training set is used for learning the mapping automatically from induced senses to gold senses for $t$. This obtained mapping is used to evaluate the instances in the test set. This supervised evaluation was firstly used in SemEval 2007 WSID task, and after that it became an important evaluation setting for consecutive SemEval WSI and WSD tasks. From my experiments, Agirre's method also penalizes systems that provide a high number of clusters since this method is not able to map an induced sense that occurred in the test set but not observed in the training set. One improvement is that instead of dividing the data randomly, division can aim to preserve the distribution of senses for both splits (e.g., Stratified K-Fold Validation).
