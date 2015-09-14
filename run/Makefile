@@ -45,6 +45,12 @@ s10-test.key: s10-test-context-fetch.err
 	python filterer.py $< <(cat ../data/s10/*.key | sort |\
 	uniq | grep -v "^$$") 0 1 exclude > $@
 
+onto-test.key: on.filtered.gz
+	zcat $< | python onto-key-extractor.py > $@
+
+onto-test.context.gz: on.filtered.gz
+	zcat $< | python onto-context-fetch.py | gzip > $@
+
 TEST_S10=$(shell find ../data/s10/test_data -name "*.[nv].xml" | sort)
 s10-test.gz: ../data/s10/test_data
 	python s10-fetch.py ${TEST_S10} | gzip > $@
@@ -210,7 +216,7 @@ scores/%.knn-mad.txt: %/dists %.key # mad=min_avg_dist
 ## 1. Original (--subs_embed_same) POS embeddings.
 
 %/embeddings/XYw.noun.scode.gz: %.noun.scode.gz %.sub.gz
-	-mkdir $*/embeddings
+	-mkdir -p $*/embeddings
 	python concat-XYw.py $< $^ --subs_embed_same 2>$*-XYw.noun.err | gzip > $@
 
 %/embeddings/XYw.verb.scode.gz: %.verb.scode.gz %.sub.gz
@@ -248,6 +254,10 @@ s13-test/embeddings/orig-%: s13-test/embeddings/%.noun.scode.gz s13-test/embeddi
 	zcat $^ | python instance-sep.py $@
 
 s10-test/embeddings/orig-%: s10-test/embeddings/%.noun.scode.gz s10-test/embeddings/%.verb.scode.gz
+	-mkdir -p $@
+	zcat $^ | python instance-sep.py $@
+
+onto-test/embeddings/orig-%: onto-test/embeddings/%.noun.scode.gz onto-test/embeddings/%.verb.scode.gz
 	-mkdir -p $@
 	zcat $^ | python instance-sep.py $@
 
@@ -442,6 +452,16 @@ s10-test-%-kmeans-locale-with-word-sense-score.tsv: s10-test/embeddings/%/
 	python wkmeans-run.py --approach locale --sense-finding word --key-file s10-test.key --input $<* --use-gold-k >> $@;\
 	cat $@
 
+onto-test-%-kmeans-locale-with-word-sense-score.tsv: onto-test/embeddings/%/ onto-test.key
+	echo -n $<" k= ";\
+	for i in 2 3 4 5 6 7 8 9 10 12 14 18 20 22 24 30 32 36 40 50; do\
+		echo -n $$i", ";\
+		python wkmeans-run.py --approach locale --sense-finding word --key-file onto-test.key --input $<* --k $$i >> $@;\
+	done;\
+	echo 'gold';\
+	python wkmeans-run.py --approach locale --sense-finding word --key-file onto-test.key --input $<* --use-gold-k >> $@;\
+	cat $@
+
 s13-test-%-kmeans-pos-based-with-word-sense-score.tsv: s13-test/embeddings/%/
 	echo -n $<" k= ";\
 for i in 2 4 8 10 16 25 32 48 72 100 128 150 192; do\
@@ -455,6 +475,14 @@ s10-test-%-kmeans-pos-based-with-word-sense-score.tsv: s10-test/embeddings/%/
 	for i in 2 4 8 10 16 25 32 48 72 100; do\
 		echo -n $$i", ";\
 		python wkmeans-pos-based.py --key-file s10-test.key --input $</* --enrichment n s10-test.noun.scode.gz v s10-test.verb.scode.gz --k $$i --evaluate-separately >> $@;\
+	done;\
+	cat $@
+
+onto-test-%-kmeans-pos-based-with-word-sense-score.tsv: onto-test/embeddings/%/ onto-test.key
+	echo -n $<" k= ";\
+	for i in 2 4 8 10 16 25 32 48 72 100 150 200 300; do\
+		echo -n $$i", ";\
+		python wkmeans-pos-based.py --key-file onto-test.key --input $</* --enrichment n onto-test.noun.scode.gz v onto-test.verb.scode.gz --k $$i --evaluate-separately >> $@;\
 	done;\
 	cat $@
 

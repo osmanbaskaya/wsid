@@ -19,10 +19,23 @@ if path.startswith('s07-test'):
     regex = re.compile('<((\w+\.\w)\.(.*))>')  # for s10, s13
     print >> sys.stderr, regex
 
+if path.startswith('onto-test'):
+    regex = re.compile('<((\w+\.\w)\.on\.(.*))>')
+    print >> sys.stderr,  regex.pattern
+
 d = dd(list)
 for line in sys.stdin:
-    tt, tw, inst_id = regex.findall(line)[0]
-    d[tw].append(line)
+    try:
+        tt, tw, inst_id = regex.findall(line)[0]
+        if path.startswith('onto-test'):
+            L = line.split('\t')
+            L[0] = "<%s.%s>" % (tw, inst_id)
+            line = '\t'.join(L)
+        d[tw].append(line)
+    except IndexError:
+        print line
+        raise IndexError()
+        
 
 for tw, lines in d.iteritems():
     with open("%s/%s" % (path, tw), 'w') as f:

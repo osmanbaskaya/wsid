@@ -22,7 +22,7 @@ for line in sys.stdin:
         sys.stderr.write("%s\n" % instance)
         continue
     sentence = sentence.split()
-    print "%s <%s> %s" % (" ".join(sentence[offset-4:offset]), instance,
+    print "%s <%s> %s" % (" ".join(sentence[max(offset-4, 0):offset]), instance,
                           " ".join(sentence[offset+1:min(len(sentence), offset+4)]))
 
 
