@@ -1,0 +1,53 @@
+\section{Word Sense Induction and Disambiguation}
+
+Word Sense Disambiguation (WSD) is the task that identifying one of correct senses in a fixed-list of definitions (e.g. dictionary) of a polysemous word for a given context. The hardness of this problem is based on ambiguity in the language. It is not a big surprise that this process is non-trivial for computers since it can sometimes be hard for human that has very accurate and up-to-date built-in language model, and enormous database regarding the real world to distinguish similar senses of a word. Thus, some researchers argued that WSD is AI-complete, meaning that the difficulty to solve this problem is equivalently hard to solve the most difficult problems in Artificial Intelligence \cite{mallery1988thinking}. Here is an example of ambiguity in the natural language: \\
+
+\begin{quote}
+1. Oğuz bought me a book named "Our Mathematical Universe".\\ 2. I will book a flight for San Francisco really soon!
+\end{quote}
+
+
+The word \emph{book} in the first sentence is clearly in the different sense than second one. First one denotes the "a bound collection of pages" sense while the other one bears the "to make an action or event a matter of record" sense. \\
+
+Word sense disambiguation systems rely on knowledge resources. Resources are categorized into two: structured resources and unstructured ones. Structured resources are thesauri such as Roget's International Thesaurus (\cite{chapman1984roget}), machine readable dictionaries such as Collins English Dictionary, Oxford Dictionary of English, ontologies such as WordNet (\cite{fellbaum98electronic}), Omega Ontology (\cite{philpot2005omega}), OntoNotes (\cite{hovy06ontonotes}). Unstructured resources can be raw corpora such as Brown Corpus (\cite{francis1979brown}) and uKWaC (\cite{ukWaC}), sense annotated corpora such as SemCor (\cite{mihalcea1998semcor}), collocation resources such as Word Sketch Engine\footnote{https://www.sketchengine.co.uk/}, JustTheWord\footnote{http://www.just-the-word.com/}
+
+
+
+
+
+\section{Thesis}
+
+This thesis investigates the performance of word embedding method proposed by \cite{yatbaz2012learning} on Word Sense Induction. Word Sense Induction (WSI) is problem of identifying senses of a polysemous word without using a fixed-list of definitions or any hand-crafted resources. In contrast to most common approach which is to apply clustering or graph partitioning on a representation of first or second order co-occurrences of word, this method obtains a probability distribution for each context suggested by a statistical model, and this distribution helps to create word embeddings using co-occurrence framework proposed by \cite{globerson2004euclidean} that represents the context with a low dimensional, dense vectors in Euclidean space. Then, these embeddings are clustered by $k$-means clustering algorithm.
+
+
+\section{Motivation}
+
+Sense discovery is crucial for many problems in Natural Language Processing (NLP). 
+
+\paragraph{Machine Transition} where a system is responsible translating one language (source) to another (target). Identifying to the correct sense of a word enables a system correctly translate a sentence.
+
+\paragraph{Lexicography} is the discipline to compile, evaluate and design of the dictionaries. The language is not stationary, and identifying new usages of words, or detecting the emerging senses can help in this area.
+
+\paragraph{Question Answering} is a discipline to answer questions asked by humans. A decent system needs to retrieve correct content even not a single word is similar with the question.
+
+\paragraph{Information Retrieval} is a discipline to present the most relevant information according to unstructured text. \cite{schutze95information} showed that using highly accurate word sense disambiguation system increases the accuracy of an Information Retrieval systems from 29.9\% to
+34.2\%.
+\section{Outline}
+
+This thesis is organized as follows. \\
+
+
+%\textbf{Chapter \ref{chapter:wsi}} is devoted to describe Word Sense Induction problem. \\
+
+
+\textbf{Chapter \ref{chapter:related-work}} is devoted to describe Word Sense induction problem and overviews the related work in literature. \\
+
+
+\textbf{Chapter \ref{chapter:system}} is dedicated to explain the proposed embedding-based system for the problem of sense discovery. \\
+
+\textbf{Chapter \ref{chapter:evaluation-framework}} overviews the supervised and unsupervised evaluation methodologies commonly used in WSI tasks. \\
+
+
+\textbf{Chapter \ref{chapter:experiments}} reports the results of my system and comparisons of the baseline systems and other systems in literature on lexical sample tasks in SemEval 2010, SemEval 2013, and the new dataset we suggested for Word Sense Induction benchmark. This dataset contains words with high inter-annotator agreement (IAA). \\
+
+\textbf{Chapter \ref{chapter:conclusion}} is the chapter concludes the work in this thesis and suggests future topics and questions needed be investigated.
