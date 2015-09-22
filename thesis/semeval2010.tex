@@ -1,9 +1,5 @@
-
-\emph{TODO: LM details should be explained somewhere above.}
-
-
 \subsection{Dataset Information} 
-The test dataset is part of OntoNotes \cite{hovy06ontonotes}. The texts come from various news sources including CNN, ABC and others. The test set for this task consists of 100 words, 50 nouns and 50 verbs; 5285 noun instances and 3630 verb instances, 8915 instances in total. Average number of sense for nouns is 4.46 and for verbs is 3.12. The following is an example for the test data instance.
+The test dataset is part of OntoNotes \cite{hovy06ontonotes}. The text comes from various news sources including CNN, and ABC. The test set for this task consists of 100 words, 50 nouns and 50 verbs; 5285 noun instances and 3630 verb instances, 8915 instances in total. Average number of sense for nouns is 4.46 and for verbs is 3.12. Table \ref{table:semeval10-dataset} summarizes the dataset statistics that is used in this section. The following is an example for the test data instance. Note that all reported scores through this thesis are obtained using the single-sense instance set.The following is an example for the test data instance.
 
 \begin{quote}
   $<swim.v.1>$ \\
@@ -17,6 +13,24 @@ The test dataset is part of OntoNotes \cite{hovy06ontonotes}. The texts come fro
  $</swim.v.1>$
 \end{quote}
 
+\begin{table}
+\begin{center}
+    \begin{tabular}{ l | c | c | l }  \Xhline{2\arrayrulewidth}  
+     & \bf Noun & \bf Verb & \bf All \\  \Xhline{2\arrayrulewidth}  
+    \bf \# of Target Words & 50 & 50  & 100 \\ 
+    \bf \# of Instances & 5285 & 3630 & 8915 \\ 
+    \bf Average \# of Sense & 4.46 & 3.12 & 0 \\ 
+    \bf Average Sense Perplexity & 0 & 0 & 0 \\  \Xhline{2\arrayrulewidth}  
+    \end{tabular}
+\end{center}
+    \caption{\label{table:semeval10-dataset} Dataset statistics for the SemEval 2010 WSID task}
+\end{table}
+
+Organizers also provided a training data set. The main difference between previous WSI task in SemEval-2007 and this task was that the training and testing data explicitly separated and the training data is used for sense induction, and the final evaluation was employed on the test data. In other words, systems should use only the training data for sense induction. \\
+
+The evaluation framework consisted of unsupervised and the supervised methods. For the unsupervised evaluation, organizers picked two metrics: \emph{V-Measure} (\cite{rosenberg07vmeasure}) and \emph{paired-F-Score} (\cite{artiles09weps}). Organizers provided more details on the choice of these measures in \cite{manandhar2010semeval}. For the supervised evaluation, they used the same evaluation technique with the SemEval-2007 WSI Task (\cite{agirre07semeval}), except one difference: the reported results of SemEval-2010 task were obtained with 5-fold cross validation.  \\
+
+The following section contains baselines and their descriptions, their performance on the test data. 
 
 
 %I removed 87 instances because of two reasons. Some target word was observed 
@@ -24,18 +38,66 @@ The test dataset is part of OntoNotes \cite{hovy06ontonotes}. The texts come fro
 \subsection{Baselines}
 \label{semeval10-baselines}
 
-\paragraph{Most Frequent Baseline:} Task organizers provided the FScore of most frequent baselines (MFS), which are 0.532, 0.666 and 0.587 for nouns, verbs, and all words, respectively.
-\paragraph{Random Baselines:}I calculated four types of random baselines: (1) Random induced sense baseline, (2) uniform random baseline (3) shuffled version of random baseline, and (4) the random baseline uses the same sense distribution with the gold data. The first one is a dummy system that provides random induced senses for each instance. Since this random baseline provides arbitrary senses (i.e., the sense inventory is not the same with the gold standard sense inventory), the mapping between these induced senses and gold standard senses needs to be done. The number in the name of the baseline indicates how many different induced senses are provided for each target word. The second type of random baseline uses the correct number of sense for each target word and picks a sense among those senses provided in gold standard with same chance (uniformly distributed). Third one uses the gold standard and shuffles them. Then, it assigns shuffled senses to the instances. That is, each type of  senses for this baseline equals to the gold standard's. The last baseline picks senses according to the sense distribution of each word. \href{http://goo.gl/f2X0da}{Results for random baselines can be seen here}.
-\paragraph{kNN-baselines (substitute vectors) :} These baselines are computed as follows. First, the most frequent 100 substitutes and their probabilities are found for each test instance using \emph{FASTSUBS} algorithm \cite{fastsubs} and a language model that built by using ukWaC \cite{ukWaC} as corpus and SRILM \cite{stolcke02srilm} as a language model library. These 100 substitutes is not a probability distribution and needs to be normalized. After normalization, I obtained legitimate probability distributions and each instance is represented by its substitute distribution. Using various distance metrics (euclid, cosine, manhattan, maximum, jensen), I found the closest neighboring test instances and their distances for each instance. The two types of kNN baseline are calculated: \emph{majority voting} and \emph{minumum average distance}. The first type is usual kNN. Using the answers (gold standard for test data), it decides the sense of the current instance by looking labeled senses of $k$ neighboring instances. This version does not consider the distance values. That is, the weights of the each neighbors are equal in sense deciding process. It returns the majority sense as the predicting sense. The other baseline differs from the first and it takes into account the distance between the neighbors and the instance whose sense is in question. It returns the sense that has the minimum average distance among the senses that $k$ closest neighbors of the instance have. \href{http://goo.gl/ofm4cW}{Results can be seen in details}.
-\paragraph{kNN-baseline (embeddings) :} Two types of representation are tested here. One is $X\bar{Y}$ and other is $XY_w$ (see Section \ref{section:representations} for details). \href{https://goo.gl/010sp5}{Scores for embeddings can be seen here.} 
-\paragraph{SVM-based baseline (substitute vectors) :} This baseline is similar to kNN baseline; SVM with RBF kernel is used as classifier. Hyperparameters are optimized by grid search and scores are obtained by 5-fold cross validation. \href{https://goo.gl/i43T1U}{Results and best hyperparameter sets can be found here}.
-\paragraph{SVM-based baseline (with XY$_w$ embeddings) :} Scores of XY$_w$ embeddings obtained Pos-based co-occurrence modeling can be found \href{https://goo.gl/Zofhfm}{here}. \\
+\paragraph{Most Frequent Baseline:} Task organizers provided the performance of most frequent baselines (MFS) in supervised evaluation, which are 0.532, 0.666 and 0.587 for nouns, verbs, and all words, respectively.
+
+\begin{table}
+\begin{center}
+    \begin{tabular}{  l | l | l | l }
+    \Xhline{2\arrayrulewidth}  \bf RB type  & \bf 1 of 2 & \bf 1 of 3 & \bf 1 of n \\ \Xhline{2\arrayrulewidth}
+    \bf Induced RB & 0.585 & 0.575 & 0.574 \\ \hline
+    \bf RB (uniform) & - & - & 0.278 \\ 
+    \bf RB (weighted) & - & - & 0.494 \\ \Xhline{2\arrayrulewidth}
+    \end{tabular}
+\end{center}
+    \caption{\label{table:semeval10-random-baseline} Random baselines on SemEval-2010 Task 14 test set. Induced baseline randomly tagged contexts and after Agirre's mapping is applied. For each instance, uniform baseline randomly picks one of the senses in the sense inventory with equal chance. Weighted one considers the sense distribution in the sense inventory.}
+\end{table}
 
 
-There are many embeddings in literature that are obtained with various methods. I also provided four more baselines utilized different embedding sets (Details of these embeddings can be found Subsection \ref{subsection:embeddings}). Note that these baselines use SVM as a classifier. However, difference of embedding vector of each word makes each baseline different. These representations consist of two parts as XY$_w$ word embeddings. First part (X) of each representation is the same for all four embeddings and it is obtained by POS-based co-occurrence modeling (more details in Section \ref{section:representations}. The second part (Y$_w$) of the representation comes from weighted average of the embedding vectors seen in top 100 substitutes of the context. Any substitute word that is absent in embedding set skipped, and the normalization is done for remaining substitute words. \href{https://goo.gl/Tcym7B}{The coverage of each embedding sets for these baselines can be found here}.
+\paragraph{Random Baselines (RBs):}I calculated three types of random baselines: (1) Random induced sense baseline, (2) uniform random baseline, and (3) the random baseline uses the same sense distribution with the gold data. The first one is a dummy system that provides random induced senses for each instance. Since this random baseline provides arbitrary senses (i.e., the sense inventory is not the same with the gold standard sense inventory), the mapping between these induced senses and gold standard senses needs to be done. The number in the name of the baseline indicates how many different induced senses are provided for each target word. The second type of random baseline uses the correct number of sense for each target word and picks a sense among those senses provided in gold standard with same chance (uniformly distributed). Third one picks senses according to the sense distribution of each word. Table \ref{table:semeval10-random-baseline} shows the performance of various random baselines. 
 
-The probabilities of each substitute word for given context is used as weight of its embedding vector. In other words, the embedding vector of each substitute word contributes according to its observed probability for the given context. Remember that this probabilities calculated by using 4-gram language model that built from uKWaC, a 2- billion word web-gathered corpus.  \\
 
-\href{https://goo.gl/Tcym7B}{Scores of the different embeddings can be seen here.}
+%\paragraph{kNN-baselines (substitute vectors) :} These baselines are computed as follows. First, the most frequent 100 substitutes and their probabilities are found for each test instance using \emph{FASTSUBS} algorithm \cite{fastsubs} and a language model that built by using ukWaC \cite{ukWaC} as corpus and SRILM \cite{stolcke02srilm} as a language model library. These 100 substitutes is not a probability distribution and needs to be normalized. After normalization, I obtained legitimate probability distributions and each instance is represented by its substitute distribution. Using various distance metrics (euclid, cosine, manhattan, maximum, jensen), I found the closest neighboring test instances and their distances for each instance. The two types of kNN baseline are calculated: \emph{majority voting} and \emph{minumum average distance}. The first type is usual kNN. Using the answers (gold standard for test data), it decides the sense of the current instance by looking labeled senses of $k$ neighboring instances. This version does not consider the distance values. That is, the weights of the each neighbors are equal in sense deciding process. It returns the majority sense as the predicting sense. The other baseline differs from the first and it takes into account the distance between the neighbors and the instance whose sense is in question. It returns the sense that has the minimum average distance among the senses that $k$ closest neighbors of the instance have. \href{http://goo.gl/ofm4cW}{Results can be seen in details}.
+
+%\paragraph{kNN-baseline (embeddings) :} Two types of representation are tested here. One is $X\bar{Y}$ and other is $XY_w$ (see Section \ref{section:representations} for details). \href{https://goo.gl/010sp5}{Scores for embeddings can be seen here.} 
+
+
+\begin{table}
+\begin{center}
+    \begin{tabular}{ r | c | c | c }  \Xhline{2\arrayrulewidth}  
+    \bf Representation & \bf \# of word embeddings & \bf Coverage (\%) & \bf Accuracy (\%) \\  \Xhline{2\arrayrulewidth}
+    \bf Yatbaz-Y (PoS) & 254746 & 100 & 69.469 \\
+    \bf Yatbaz-Y (Global) & 254746 & 100 & 67.823 \\ \hline
+    \bf Skipgram & 1119721 & 96.91 & 69.119  \\ 
+    \bf Glove & 400001 &  92.49 & 68.476  \\ 
+    \bf Multilingual & 180835 & 91.14 & 67.552 \\ 
+    \bf Bansal & 316756 & 96.54 & 67.891 \\ 
+    \bf Global Context & 100232 & 91.22 & 67.883 \\ 
+    \bf CW & 268810 & 97.03 & 68.027 \\ 
+    \bf HLBR & 246122 & 96.47 & 68.037 \\ \hline 
+    \bf SubDist & - & - & 65.542 \\  \Xhline{2\arrayrulewidth} 
+    \end{tabular}
+\end{center}
+    \caption{\label{table:semeval10-svm-baseline} A comparison of the accuracies for various embeddings, and substitute distribution.}
+\end{table}
+
+\paragraph{SVM-based baseline (substitute vectors) :} This baseline is computed as follows. First, the most frequent 100 substitutes and their probabilities are found for each test instance using \emph{FASTSUBS} algorithm \cite{fastsubs} and a language model that built by using ukWaC \cite{ukWaC} as corpus and SRILM \cite{stolcke02srilm} as a language model library. These 100 substitutes is not a probability distribution and needs to be normalized. After normalization, I obtained legitimate probability distributions and each instance is represented by its substitute distribution. SVM with RBF kernel is used as classifier. Hyperparameters are optimized by grid search and scores are obtained by 5-fold cross validation. \footnote{Results and best hyperparameter sets can be found on \href{https://goo.gl/i43T1U}{https://goo.gl/i43T1U}}.
+
+\paragraph{SVM-based baselines:} Table \ref{table:semeval10-svm-baseline} summarizes each embedding's performance, its coverage for the test data.\footnote{Detailed version can be found on \href{https://goo.gl/Zofhfm}{https://goo.gl/Zofhfm}}
+
+%Scores of XY$_w$ embeddings obtained PoS-based co-occurrence modeling can be found \href{https://goo.gl/Zofhfm}{here}. 
+
+
+
+
+
+%  #### SCORES WITH DIFFERENT EMBEDDINGS  ####
+
+%There are many embeddings in literature that are obtained with various methods. I also provided four more baselines utilized different embedding sets (Details of these embeddings can be found Subsection \ref{subsection:embeddings}). Note that these baselines use SVM as a classifier. However, difference of embedding vector of each word makes each baseline different. These representations consist of two parts as XY$_w$ word embeddings. First part (X) of each representation is the same for all four embeddings and it is obtained by POS-based co-occurrence modeling (more details in Section \ref{section:representations}. The second part (Y$_w$) of the representation comes from weighted average of the embedding vectors seen in top 100 substitutes of the context. Any substitute word that is absent in embedding set skipped, and the normalization is done for remaining substitute words. \href{https://goo.gl/Tcym7B}{The coverage of each embedding sets for these baselines can be found here}.
+
+%The probabilities of each substitute word for given context is used as weight of its embedding vector. In other words, the embedding vector of each substitute word contributes according to its observed probability for the given context. Remember that this probabilities calculated by using 4-gram language model that built from uKWaC, a 2- billion word web-gathered corpus.  \\
+
+%\href{https://goo.gl/Tcym7B}{Scores of the different embeddings can be seen here.}
 
 \subsection{Comparison with the Other Systems}
+
+There were 26 systems participated in this task. \emph{TODO: explain approaches of the participated systems after Introduction section is done.}. According to the supervised evaluation, 14 systems outperformed MFS baseline. \emph{UoY} (\cite{korkontzelos10uoy}) is the best performed system in nouns and overall, while the highest ranked system in verbs is \emph{Duluth-Mix-Narrow-Gap} (\cite{pedersen10duluth}).
