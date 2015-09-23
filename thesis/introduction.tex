@@ -1,20 +1,21 @@
+In this chapter, I will introduce Word Sense Disambiguation and Word Sense Induction problems, and summarize the work in the thesis. I will continue describing the motivations. At the end of the chapter I will give an outline for the rest of the thesis.
+
 \section{Word Sense Induction and Disambiguation}
 
-Word Sense Disambiguation (WSD) is the task that identifying one of correct senses in a fixed-list of definitions (e.g. dictionary) of a polysemous word for a given context. The hardness of this problem is based on ambiguity in the language. It is not a big surprise that this process is non-trivial for computers since it can sometimes be hard for human that has very accurate and up-to-date built-in language model, and enormous database regarding the real world to distinguish similar senses of a word. Thus, some researchers argued that WSD is AI-complete, meaning that the difficulty to solve this problem is equivalently hard to solve the most difficult problems in Artificial Intelligence \cite{mallery1988thinking}. Here is an example of ambiguity in the natural language: \\
+Word Sense Disambiguation (WSD) is the task that identifying one of correct senses in a fixed-list of definitions (e.g. dictionary) of a polysemous word for a given context. The hardness of this problem is based on ambiguity in the language. It is not a big surprise that this process is non-trivial for computers since it can sometimes be hard for human that has very accurate and up-to-date built-in language model, and enormous knowledge regarding the real world to distinguish similar senses of a word. Thus, some researchers argued that WSD is AI-complete, meaning that the difficulty to solve this problem is equivalently hard to solve the most difficult problems in Artificial Intelligence \cite{mallery1988thinking}. Here is an example of ambiguity in the natural language: \\
 
 \begin{quote}
 1. Oğuz bought me a book named "Our Mathematical Universe".\\ 2. I will book a flight for San Francisco really soon!
 \end{quote}
 
 
-The word \emph{book} in the first sentence is clearly in the different sense than second one. First one denotes the "a bound collection of pages" sense while the other one bears the "to make an action or event a matter of record" sense. \\
+The word \emph{book} in the first sentence is clearly in the different sense than the second one. First one denotes the "a bound collection of pages" sense while the other one bears the "to make an action or event a matter of record" sense. \\
 
-Word sense disambiguation systems rely on knowledge resources. Resources are categorized into two: structured resources and unstructured ones. Structured resources are thesauri such as Roget's International Thesaurus (\cite{chapman1984roget}), machine readable dictionaries such as Collins English Dictionary, Oxford Dictionary of English, ontologies such as WordNet (\cite{fellbaum98electronic}), Omega Ontology (\cite{philpot2005omega}), OntoNotes (\cite{hovy06ontonotes}) and BabelNet (\cite{navigli2012babelnet}). Unstructured resources can be raw corpora such as Brown Corpus (\cite{francis1979brown}) and uKWaC (\cite{ukWaC}), sense annotated corpora such as SemCor (\cite{mihalcea1998semcor}), collocation resources such as Word Sketch Engine\footnote{https://www.sketchengine.co.uk/}, JustTheWord\footnote{http://www.just-the-word.com/}. \\
+Word sense disambiguation systems rely on knowledge resources. Resources are categorized into two: structured resources and unstructured ones. Structured resources are thesauri such as Roget's International Thesaurus (\cite{chapman1984roget}), machine readable dictionaries such as Collins English Dictionary, Oxford Dictionary of English, ontologies such as WordNet (\cite{fellbaum98electronic}), Omega Ontology (\cite{philpot2005omega}), OntoNotes (\cite{hovy06ontonotes}) and BabelNet (\cite{navigli2012babelnet}). Unstructured resources can be raw corpora such as Brown Corpus (\cite{francis1979brown}) and uKWaC (\cite{ukWaC}); sense annotated corpora such as SemCor (\cite{mihalcea1998semcor}); collocation resources such as Word Sketch Engine\footnote{https://www.sketchengine.co.uk/} and JustTheWord\footnote{http://www.just-the-word.com/}. \\
 
-Creating these resources are highly labor-intensive and expensive task. Because of these drawbacks, only a few languages have resources. Moreover, natural languages are not stationary, these resources should periodically be updated which makes the problem more difficult. Also, domain is another parameter need be considering while creating these knowledge resources, and the process should be done for each domain separately. The necessity of this repetition is called \emph{language acquisition bottleneck} (\cite{gale92work}). On the other hand, Word Sense Induction (WSI) aims to \emph{discriminate} (\cite{schutze98automatic}) different senses of a word from a corpus by unsupervised learning approaches without using any hand-crafted resources or manually annotated data.  \\
+Creating these resources are highly labor-intensive and expensive task. Because of these drawbacks, only a few languages have similar resources. Moreover, natural languages are not stationary, these resources should periodically be updated which makes the problem much more difficult. Also, domain is another parameter need be considering while creating these knowledge resources, and the process should be done for each domain separately because sense inventory of the one domain might radically be different than other. The necessity of this repetition is called \emph{language acquisition bottleneck} (\cite{gale92work}). On the other hand, Word Sense Induction (WSI) aims to \emph{discriminate} (\cite{schutze98automatic}) different senses of a word from a corpus by unsupervised learning approaches without using any hand-crafted resources or manually annotated data.  \\
 
-As mentioned above, there exists several drawbacks of representing the word senses with a fixed-list of definitions of a manually
-constructed lexical database. There is no guarantee that they reflect the exact meaning of a target
+As mentioned above, there exists several drawbacks of representing the word senses with a fixed-list of definitions of a manually constructed lexical database. There is no guarantee that they reflect the exact meaning of a target
 word in a given context since they usually contain definitions that are too general (\cite{veronis04hyperlex}).
 More so, lexical databases often include many rare senses while missing corpus/domain-specific senses (\cite{pantel02discovering}). \\
 
@@ -32,7 +33,7 @@ Word Sense Induction methods can be categorized as follows and it will introduce
 
 \section{Thesis}
 
-This thesis investigates the performance of word embedding method proposed by \cite{yatbaz2012learning} on Word Sense Induction. Word Sense Induction (WSI) is problem of identifying senses of a polysemous word without using a fixed-list of definitions or any hand-crafted resources. In contrast to most common approach which is to apply clustering or graph partitioning on a representation of first or second order co-occurrences of word, this method obtains a probability distribution for each context suggested by a statistical model, and this distribution helps to create word embeddings using co-occurrence framework proposed by \cite{globerson2004euclidean} that represents the context with a low dimensional, dense vectors in Euclidean space. Then, these embeddings are clustered by $k$-means clustering algorithm.
+This thesis investigates the performance of word embedding method proposed by \cite{yatbaz2012learning} on Word Sense Induction. Word Sense Induction (WSI) is  a problem of identifying senses of a polysemous word without using a fixed-list of definitions or any hand-crafted resources. In contrast to most common approach which is to apply clustering or graph partitioning on a representation of first or second order co-occurrences of word, this method obtains a probability distribution for each context suggested by a statistical model, and this distribution helps to create embeddings using co-occurrence framework proposed by \cite{globerson2004euclidean} that represents the context (token) with a low dimensional, dense vectors in Euclidean space. Then, these embeddings are clustered by $k$-means clustering algorithm to distinguish usages (senses) of a word.
 
 
 \section{Motivation}
@@ -49,13 +50,13 @@ Sense discovery is crucial for many problems in Natural Language Processing (NLP
 34.2\%.
 \section{Outline}
 
-This thesis is organized as follows. \\
+Rest of the thesis is organized as follows. \\
 
 
 %\textbf{Chapter \ref{chapter:wsi}} is devoted to describe Word Sense Induction problem. \\
 
 
-\textbf{Chapter \ref{chapter:related-work}} is devoted to overview of the related work and the different Word Sense Induction techniques commonly used in literature. \\
+\textbf{Chapter \ref{chapter:related-work}} is devoted to overview of the related work and the different Word Sense Induction techniques used in literature. \\
 
 
 \textbf{Chapter \ref{chapter:system}} is dedicated to explain the proposed embedding-based system for the problem of sense discovery. \\
