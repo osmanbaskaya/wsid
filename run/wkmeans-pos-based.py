@@ -44,10 +44,12 @@ def run(input, enrichment, kmeans_input_base, key_file, k, column, num_of_iter=1
             p = 'zcat %s | %s | cut -f1,3- | gzip > %s' % (additional_file,
                                                            column, filtered.name)
             os.system(p)
+            print >> sys.stderr, p
             inp = "zcat %s %s" % (ff.name, filtered.name)
         kmeans = kmeans_base.format(num_of_iter, 1, k)
         output = output_formatter.format(path, pos)
         process = ' | '.join([inp, kmeans, output])
+        print >> sys.stderr, process
         os.system(process)
     return evaluate(key_file, path, evaluate_separately)
 

@@ -310,6 +310,13 @@ s13-test/embeddings/%-Y: s13-test/embeddings/%
 		cat $</$$fn | cut -f1,2,103- > $@/$$fn;\
 	done
 
+onto-test/embeddings/%-Y: onto-test/embeddings/%
+	-mkdir -p $@
+	for fn in `ls $<`; do \
+		echo $$fn processing;\
+		cat $</$$fn | cut -f1,2,103- > $@/$$fn;\
+	done
+
 # 4. X-based embedding. Only for SCODE
 
 %-test/embeddings/orig-XYw-X: %-test/embeddings/orig-XYw
@@ -480,7 +487,7 @@ s10-test-%-kmeans-pos-based-with-word-sense-score.tsv: s10-test/embeddings/%/
 
 onto-test-%-kmeans-pos-based-with-word-sense-score.tsv: onto-test/embeddings/%/ onto-test.key
 	echo -n $<" k= ";\
-	for i in 2 4 8 10 16 25 32 48 72 100 150 200 300; do\
+	for i in 2 4 8 10 16 25 48 72 100 128 150 192 256; do\
 		echo -n $$i", ";\
 		python wkmeans-pos-based.py --key-file onto-test.key --input $</* --enrichment n onto-test.noun.scode.gz v onto-test.verb.scode.gz --k $$i --evaluate-separately >> $@;\
 	done;\
