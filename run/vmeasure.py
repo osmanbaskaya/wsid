@@ -39,8 +39,9 @@ def vmeasure(m):
 
 
 def example():
-    m = np.matrix([[10, 10, 15],[20, 50, 0], [1, 10, 60], [5, 0, 0]])
-    print "Contingency Matrix: {}".format(m)
+    #m = np.matrix([[10, 10, 15],[20, 50, 0], [1, 10, 60], [5, 0, 0]])
+    m = np.matrix([[20, 5, 3],[5, 50, 0], [1, 7, 60], [5, 0, 0]])
+    print "Contingency Matrix:\n {}".format(m)
     print "-" * 50
     print "Homogeneity={:.3f}, Completeness={:.3f}, and V-Measure={:.3f}".format(homogeneity(m), completeness(m), vmeasure(m))
 
