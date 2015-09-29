@@ -115,11 +115,17 @@ SC_OPTIONS=-s ${SEED} -v -d 100 -r 5 -t 0.0001
 
 ## Supervised Random Baseline ##
 
+mfs-baseline-%: %.key
+	python scorer.py <(python mfs.py $<) $<
+
+uniform-supervised-random-baseline-%: %.key
+	python scorer.py <(python supervised-random-baseline.py $< uniform) $<
+
 shuffled-supervised-random-baseline-%: %.key
 	python scorer.py <(python supervised-random-baseline.py $< shuffled) $<
 
 weighted-supervised-random-baseline-%: %.key
-	python scorer.py <(python supervised-random-baseline.py $< shuffled) $<
+	python scorer.py <(python supervised-random-baseline.py $< weighted) $<
 
 induced-random-baseline-%: %.key ../bin/ss.jar # make induced-random-baseline-s13-test NUM_SENSE=3
 	python random-baseline.py $< ${NUM_SENSE} > /tmp/$@.${NUM_SENSE}
@@ -471,8 +477,8 @@ onto-test-%-kmeans-locale-with-word-sense-score.tsv: onto-test/embeddings/%/ ont
 
 s13-test-%-kmeans-pos-based-with-word-sense-score.tsv: s13-test/embeddings/%/
 	echo -n $<" k= ";\
-for i in 2 4 8 10 16 25 32 48 72 100 128 150 192; do\
-	echo -n $$i", ";\
+	for i in 2 4 8 10 16 25 32 48 72 100 128 150 192; do\
+		echo -n $$i", ";\
 		python wkmeans-pos-based.py --key-file s13-test.key --input $</* --enrichment n s13-test.noun.scode.gz v s13-test.verb.scode.gz j s13-test.adj.scode.gz --k $$i --evaluate-separately >> $@;\
 	done;\
 	cat $@

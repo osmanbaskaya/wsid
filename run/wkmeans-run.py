@@ -8,13 +8,15 @@ import tempfile
 from collections import defaultdict as dd
 from subprocess import check_output
 from nlp_utils import find_num_senses_of_each_word
+from utils.evaluate import geometric_mean
 
 
 kmeans_base = "../bin/wkmeans -r {} -l -w -s {} -k {} 2>/dev/null";
 #kmeans_out_base = "gzip >> {}/{}.km.gz & \n"
 
-scorer = '/usr/bin/java -jar ../bin/ss.jar -s'
-
+scorers = ['/usr/bin/java -jar ../bin/ss.jar -s', 
+           '/usr/bin/java -jar ../bin/fuzzy-nmi.jar',
+           '/usr/bin/java -jar ../bin/fuzzy-bcubed.jar']
 
 def chunks(l, n):
     """Yield successive n-sized chunks from l."""
@@ -51,20 +53,32 @@ def run(input, kmeans_input_base, pair_file, sense_finding, key_file, num_of_ite
 
 def evaluate(key_file, path, evaluate_separately=False):
     scores = []
-    total = 0
     if evaluate_separately:
         for i, fn in enumerate(os.listdir(path), 1):
-            score = check_output('{} {} {}/{} | tail -2 | head -1'.\
-                                    format(scorer, key_file, path, fn), shell=True)
-            score = float(score.split('\t')[1])
-            scores.append((fn, score))
-            total += score
+            metric_scores = []
+            for scorer in scorers:
+                score = check_output('{} {} {}/{} | tail -2 | head -1'.\
+                                        format(scorer, key_file, path, fn), shell=True)
+                score = float(score.split('\t')[1])
+                metric_scores.append(score)
+            nmi = metric_scores[1]
+            bcubed = metric_scores[2]
+            metric_scores.append(str(geometric_mean(float(nmi), float(bcubed))))
+            scores.append((fn, '\t'.join(metric_scores)))
+            scores.append((fn, metric_scores))
 
-    # print >> sys.stderr, total / i
     os.system('cat {}/*.km > {}/system_file.txt'.format(path, path))
-    score = check_output('{} {} {}/system_file.txt | tail -2 | head -1'.format(scorer, key_file, path), shell=True)
-    score = score.split()[-1]
-    scores.append(('all', score))
+
+    metric_scores = []
+    for scorer in scorers:
+        score = check_output('{} {} {}/system_file.txt | tail -2 | head -1'.format(scorer, key_file, path), shell=True)
+        score = score.split()[-1]
+        metric_scores.append(score)
+
+    nmi = metric_scores[1]
+    bcubed = metric_scores[2]
+    metric_scores.append(str(geometric_mean(float(nmi), float(bcubed))))
+    scores.append(('all', '\t'.join(metric_scores)))
     return scores
 
     #os.system('{} {} {}/system_file.txt'.format(scorer, key_file, path))

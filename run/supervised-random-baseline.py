@@ -28,5 +28,11 @@ elif method == 'shuffled':
         shuffle(senses[tw])
         for instance, sense in izip(instances[tw], senses[tw]):
             print "%s %s %s" % (tw, instance, sense)
+elif method == 'uniform':
+    for tw in sorted(instances.keys()):
+        tw_senses = list(set(senses[tw]))
+        n = len(tw_senses)
+        for instance in instances[tw]:
+            print "%s %s %s" % (tw, instance, tw_senses[randint(0, n-1)])
 else:
     print "Need to call %s test_data shuffled/weigted" % sys.argv[0]

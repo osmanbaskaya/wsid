@@ -1,4 +1,5 @@
 import logging
+import math
 from subprocess import check_output
 from operator import itemgetter
 from itertools import izip
@@ -250,6 +251,9 @@ def main():
     else:
         run_doctest()
 
+def geometric_mean(score1, score2):
+   return math.sqrt(score1 * score2)
+    
 
 if __name__ == '__main__':
     main()
